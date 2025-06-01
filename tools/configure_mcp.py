@@ -148,6 +148,16 @@ MCP_SERVERS = [
         "homepage": "https://www.npmjs.com/package/gc-httpx-mcp"
     },
     {
+        "name": "Hydra",
+        "key": "Hydra",
+        "command": "npx",
+        "args": ["-y", "gc-hydra-mcp"],
+        "description": "MCP server for password brute-force attacks and credential testing using the Hydra tool.",
+        "exe_name": "hydra.exe",
+        "env_var": "HYDRA_PATH",
+        "homepage": "https://www.npmjs.com/package/gc-hydra-mcp"
+    },
+    {
         "name": "Katana",
         "key": "Katana",
         "command": "npx",
