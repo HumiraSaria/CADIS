@@ -44,7 +44,7 @@ class WorkerPool:
 
     def _generate_id(self) -> str:
         """Generate unique worker ID."""
-        worker_id = f"ghost-{self._next_id}"
+        worker_id = f"agent-{self._next_id}"
         self._next_id += 1
         return worker_id
 
@@ -93,7 +93,7 @@ class WorkerPool:
 
     async def _run_worker(self, worker: AgentWorker) -> None:
         """Run a single worker agent."""
-        from ..ghostcrew_agent import GhostCrewAgent
+        from ..pa_agent import PentestAgentAgent
 
         # Wait for dependencies
         if worker.depends_on:
@@ -111,7 +111,7 @@ class WorkerPool:
 
         from ...config.constants import WORKER_MAX_ITERATIONS
 
-        agent = GhostCrewAgent(
+        agent = PentestAgentAgent(
             llm=self.llm,
             tools=self.tools,
             runtime=worker_runtime,  # Use isolated runtime
