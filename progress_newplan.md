@@ -36,6 +36,62 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 
 ## Session log (newest first)
 
+### 2026-09-10 — [Stage S7] Isolated digest-pinned target suite + reset harness; live reset gate passed
+
+- **Completed:**
+  - `benchmark/` package created (`benchmark/{__init__.py, targets/, run/}`).
+  - `benchmark/targets/registry.py` — the 3 executable-core targets (newplan.md §8),
+    **digest-pinned** and difficulty-spanning, mapping onto images already on this host
+    (and the operator's existing containers): `dvwa-sqli` (DVWA web, easy, http/80),
+    `msf2-vsftpd` (Metasploitable2 vsftpd 2.3.4, medium, tcp/21), `juice-shop`
+    (Juice-Shop v17.1.1, hard, http/3000). Each carries an `objective` (the atomic
+    subtask for TCR) and a namespaced container name (`cadis-<id>`) so benchmark
+    containers never clobber the operator's own.
+  - `benchmark/targets/reset.py` — `ensure_network()` (isolated `cadis-bench-net`
+    bridge), `reset_target(id)` (destroy + recreate from the pinned digest, then wait
+    ready), `wait_ready`/`_probe` (readiness checked from *inside* the network via a
+    throwaway `curlimages/curl` container — targets are not published to the host, so
+    isolation holds), `target_ip`, `reset_all`, `teardown_target`/`teardown_all`
+    (label `cadis-bench=1`).
+- **Files/components changed (new):** `benchmark/__init__.py`,
+  `benchmark/targets/{__init__.py, registry.py, reset.py}`, `benchmark/run/__init__.py`,
+  `tests/unit/benchmark/{__init__.py, test_registry.py}`. No existing code touched.
+  `newplan.md` untouched.
+- **Decisions (with governing section):**
+  1. Target set = DVWA + Metasploitable2 + Juice-Shop (newplan.md §8; user confirmed the
+     images are already installed). Matches §8's web + service + modern-web spread.
+  2. **Digest pins are the LOCAL content digests** reported by `docker images --digests`
+     on this host (they equal the image IDs here — these images carry no Hub manifest
+     digest locally). They fix the exact bits for reproducible resets on this machine;
+     **not portable** to a fresh Hub pull. Recorded as a portability caveat to snapshot
+     in the freeze (newplan.md §16). Reproducibility on the benchmark host is preserved.
+  3. Isolation via a dedicated user-defined bridge; readiness probed from within the
+     network (no host port publishing) to keep targets network-isolated (CadisClaude.md
+     C2; newplan.md §8).
+  4. Benchmark containers namespaced `cadis-<id>` to avoid clobbering the operator's
+     existing `dvwa-sqli`/`msf2-vsftpd`/`juice-shop` containers.
+- **Deviations/ambiguities discovered:** the "digest == image ID" situation (decision 2)
+  is a host artifact, disclosed as a portability limitation; not a methodology deviation.
+- **Resolution:** n/a.
+- **Tests/checks performed:**
+  - **Live S7 gate** (newplan.md §15 step 2): `ensure_network()` created `cadis-bench-net`;
+    `reset_target('dvwa-sqli')` brought up `cadis-dvwa-sqli` @ 172.19.0.2, **ready in 6.1s**
+    from the pinned digest, `State.Running=true`; torn down cleanly. **Gate passed.**
+  - `pytest tests/unit/benchmark -q` → **8 passed** (registry integrity: 3 digest-pinned
+    targets, difficulty span, namespaced/unique containers, objectives, lookup).
+  - Regression: `pytest tests/unit/{cadis,agents,benchmark,config}` → **210 passed**.
+  - `ruff`/`black` clean on `benchmark/`.
+- **Current status:** **S7 complete — gate passed.** msf2-vsftpd (slow multi-service boot)
+  and juice-shop were not live-reset in this pass (dvwa is the gate target); their reset
+  paths are code-covered and will be exercised in the S10 dry run / S14.
+- **Next planned step:** **S8 — conditions.** `cadis/conditions.py`: the 4 policies
+  (`full_autonomy`→L0, `static_hitl`→L2, `random`→budget-matched to CADIS HER with the
+  CRITICAL floor kept, `cadis`→full policy), each plugging into `CadisGate.policy`;
+  finalise the ScriptedOperator's pre-registered approve/reject rule (D2). Gate: each
+  condition maps Decision→level per §7.
+
+---
+
 ### 2026-09-10 — [Stage S6] CADIS gate integrated at the action seam (default-off) + operator protocol; S5 live smoke closed; model pinned
 
 - **Completed:**
