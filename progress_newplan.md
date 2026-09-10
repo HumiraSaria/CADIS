@@ -36,6 +36,57 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 
 ## Session log (newest first)
 
+### 2026-09-10 — [Stage S8] Four benchmark conditions implemented (policies); execution cadence agreed
+
+- **Execution cadence (agreed with user):** proceed autonomously through **S8→S13**
+  (conditions, recorder, runner, analysis, fidelity, freeze — all code/infra + the freeze
+  artifacts, negligible external cost), then **PAUSE before S14** (the billable full
+  benchmark run) for explicit go-ahead. IAS human rating (S15) is the user's to collect;
+  I prepare the blind export and compute κ. All commits stay local (no push).
+- **Completed:**
+  - `pentestagent/cadis/conditions.py` — the **exactly four** condition policies
+    (newplan.md §7), each a `ScoreResult → level` callable installed as `CadisGate.policy`:
+    `full_autonomy_policy`→0, `static_hitl_policy`→2, `cadis_policy`→`final_level` (reused
+    from `gate.py`), and `RandomPolicy` (budget-matched). `CONDITIONS` tuple is exactly the
+    four; `get_condition_policy(name, budget, seed)` dispatches and **refuses unknown names**
+    (so `floor_only`/`risk_only` can never be selected — out of scope, §17).
+  - `RandomBudget.from_levels(levels)` derives CADIS's measured **HER** (fraction at
+    level≥1) and the level mix over {1,2,3} from CADIS's logged per-action levels;
+    `RandomPolicy(budget, seed, keep_critical_floor=True)` intervenes on a *random* subset
+    at that HER, samples the level from CADIS's mix, and **keeps the CRITICAL→L3 floor**.
+    Deterministic given the seed → reproducible runs. Requires CADIS-first ordering (the
+    budget comes from CADIS's run on the same target).
+- **Files/components changed (new):** `pentestagent/cadis/conditions.py`;
+  `tests/unit/cadis/test_conditions.py`. No existing code touched. `newplan.md` untouched.
+- **Decisions (with governing section):**
+  1. The 4 policies map `Decision→level` exactly per §7; floor semantics live in each policy
+     (full_autonomy has no floor, static_hitl fixed L2, random keeps CRITICAL) — §7.
+  2. Random is budget-matched on **HER + level mix** and CADIS-first — the load-bearing
+     control that tests whether CADIS's interventions are *well-placed* (§7, H3).
+  3. **Scripted-operator approve/reject predicate (D2) is NOT finalised here** — it is
+     intertwined with the pre-registered cascade/outcome definitions and will be fixed and
+     recorded at **S13 pre-registration** (CadisClaude.md §9.3 step 2; newplan.md §16).
+     `ScriptedOperator` already accepts the predicate via `should_approve` (S6).
+- **Deviations/ambiguities discovered:** none new.
+- **Resolution:** n/a.
+- **Tests/checks performed:**
+  - `pytest tests/unit/cadis/test_conditions.py -q` → **14 passed** (fixed baselines incl.
+    full_autonomy=L0 even for CRITICAL and static_hitl=L2 always; `RandomBudget` derivation;
+    RandomPolicy determinism-by-seed, CRITICAL floor kept, HER=0/1 edge cases, HER-rate match
+    over 2000 draws; dispatch + unknown/`floor_only` rejected + `random` requires a budget).
+  - `pytest tests/unit/cadis -q` → **102 passed** (no regressions).
+  - `ruff`/`black` clean.
+- **Current status:** **S8 complete — gate passed** (each condition maps Decision→level per §7;
+  the set is exactly the four; out-of-scope conditions are unselectable).
+- **Next planned step:** **S9 — logging.** `cadis/recorder.py`: persist one row per proposed
+  action with the full §14 field set (`step_id, timestamp, target, condition, seed,
+  proposed_action, USC, FH, RC, w1,w2,w3, τ0,τ1,τ2, I(t), band_level, risk_floor,
+  final_level, human_decision, outcome_class, duration_ms, error`) to
+  `raw_runs/<condition>/<target>/rep_<n>/`. Wire the gate's `GateRecord`s into it. Gate: a
+  run writes every §14 field.
+
+---
+
 ### 2026-09-10 — [Stage S7] Isolated digest-pinned target suite + reset harness; live reset gate passed
 
 - **Completed:**
