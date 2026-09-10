@@ -84,6 +84,16 @@ The MCP external-server config lives in `mcp_servers.json` (Claude Desktop forma
 
 ## Running the project
 
+**Primary start command (Windows / PowerShell).** Activate the venv first, then launch the TUI with
+the Docker sandbox:
+
+```powershell
+.\venv\Scripts\Activate.ps1
+pentestagent tui --docker
+```
+
+Other commands (activate the venv first, as above):
+
 ```bash
 source venv/bin/activate
 pentestagent                    # TUI
@@ -243,6 +253,65 @@ docker compose build
 docker compose run --rm pentestagent          # Base image
 docker compose --profile kali run --rm pentestagent-kali   # Kali image
 ```
+
+## CADIS research (active effort — carry this context across sessions)
+
+An in-progress research effort is being executed inside this repo: **CADIS**, an
+oversight-and-routing layer between the agent and its executor. For every proposed action it
+estimates how much the agent should be trusted *at that step* and routes it to one of four
+graduated intervention levels. The goal is to show that oversight scaled to actual uncertainty
+and consequence beats full autonomy, static human-in-the-loop, **and** a budget-matched random
+policy (the load-bearing control).
+
+### Governing documents & their roles (do not conflate)
+
+- **`CadisClaude.md`** — the authoritative *methodological* reference. **NOTE: not present in the
+  repo yet**; where it and `newplan.md` differ, `CadisClaude.md` governs the methodology.
+- **[`newplan.md`](newplan.md)** — the forward-looking *execution protocol* (what will be done and
+  exactly how, adapting LLM access to OpenRouter). **NEVER EDIT `newplan.md`.** It is kept clean and
+  forward-looking; it must contain no progress, results, failures, or conclusions.
+- **[`progress_newplan.md`](progress_newplan.md)** — the *only* place implementation progress,
+  decisions, issues, deviations, and validation are recorded (newest-first entries, deviation
+  register). This is separate from the older `progress.md`. **All progress notes go here, not in
+  `newplan.md`.**
+
+### CADIS mechanism (from `newplan.md` §3)
+
+Three normalised signals (higher = more oversight needed) are fused linearly:
+
+- **`USC`** — self-consistency uncertainty: sample the agent `N = 5` times on identical context at
+  `T = 0.7`; `USC = 1 − SC`, where `SC` = mean pairwise similarity (edit-distance `sim` default;
+  embedding sim is ablation-only).
+- **`FH`** — failure history: mean severity over the last `K = 10` outcomes (success 0.0 / partial
+  0.3 / timeout 0.5 / failure 1.0).
+- **`RC`** — risk classification: rule-based regex taxonomy → {0.00 LOW, 0.33 MED, 0.66 HIGH,
+  1.00 CRITICAL}; unmatched commands fail-safe to **HIGH**.
+- **Composite:** `I(t) = 0.35·USC + 0.30·FH + 0.35·RC`.
+- **Routing:** `level = max(band_level(I), risk_floor(RC))` with thresholds `τ = 0.25/0.50/0.75`;
+  **CRITICAL ⇒ L3** hard floor. Levels: `L0` autonomous · `L1` notify · `L2` suggest/approve ·
+  `L3` delegate. The fusion/mapping logic must be **pure functions** (deterministic, no I/O) so
+  logged signals can be re-scored offline for ablation.
+
+### Key protocol constraints
+
+- **OpenRouter-only** LLM access (via LiteLLM `openrouter/*`); one model pinned for the whole
+  benchmark. **No local inference (Ollama/vLLM/LM Studio), no local fallback.**
+- **Exactly four benchmark conditions**: Full Autonomy (always L0), Static HITL (always L2),
+  Random (budget-matched to CADIS, CRITICAL floor kept — must run *after* CADIS on each target),
+  CADIS (full policy). Any `floor_only`/`risk_only` conditions are out of scope — not run/reported.
+- Isolated, **digest-pinned Docker targets**, reset between runs; matrix = 4 conditions × targets ×
+  `R ≥ 3` reps; freeze + pre-registration before any counted run.
+- The offline `Dataset/` (`C:\Users\abrar\OneDrive\Documents\Code\Dataset`) is **out of scope**.
+- **Deviation control (`newplan.md` §17):** no methodology/condition/formula/model change is made
+  silently; every deviation is recorded in `progress_newplan.md` *before* proceeding, citing the
+  governing `CadisClaude.md` section.
+
+### Current implementation state (as of 2026-09-10)
+
+Stage **S0** — protocol authored, **no CADIS source code written yet**. The files named in the
+`newplan.md` §5 conformity audit (`pentestagent/cadis/…`, `benchmark/run/…`, `benchmark/targets/…`)
+and `CadisClaude.md` **do not exist in the repo yet**; that audit describes the *intended* target
+state to build toward. Check `progress_newplan.md` for the latest stage before acting.
 
 ## Legal
 

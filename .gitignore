@@ -97,3 +97,6 @@ loot/*
 /conversations
 mcp_examples/kali/mcp_servers.json
 pentestagent/mcp/mcp_servers.json
+
+# Local OpenRouter API key file (never commit)
+openrouterkey.txt
