@@ -36,6 +36,66 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 
 ## Session log (newest first)
 
+### 2026-09-10 — [Stage S5] OpenRouter execution layer: key loader + N=5/T=0.7 self-consistency sampler (live smoke deferred)
+
+- **Completed:** built the OpenRouter-only execution layer (newplan.md §6), except the
+  live smoke call (deferred per user — option "a": code + mocked tests now).
+  - `pentestagent/config/constants.py` — added `get_openrouter_api_key()`. Resolution
+    order: `OPENROUTER_API_KEY` env var (loaded from `.env` via the existing
+    `load_dotenv()`) first, then a git-ignored `openrouterkey.txt` fallback (CWD, then
+    project root), which is exported into `os.environ` so LiteLLM picks it up. **No key
+    is hardcoded or logged** (user directive: use `.env`, don't hardcode).
+  - `pentestagent/cadis/sampler.py` — `SelfConsistencySampler`: queries the pinned
+    OpenRouter model N times on identical context at **T=0.7 set explicitly** (bypasses
+    the "claude"/"anthropic" temperature-drop in `llm/llm.py`), returns N command
+    strings via `canonical_action()` (tool-call name + sorted-JSON args, or text) that
+    feed `agreement.usc()`. Enforces **OpenRouter-only** (`model` must start with
+    `openrouter/`; no local path). Per-call `CallLog` (model, params, seed, latency,
+    tokens, status, attempts); bounded exponential backoff on 429/transient; per-call
+    `asyncio.wait_for` timeout; a batch that fails on API errors is `ok=False` so the run
+    can be marked invalid and re-run (never silently dropped). `completion_fn` is
+    injectable so unit tests run with no live API.
+- **Files/components changed:** modified `pentestagent/config/constants.py`
+  (+`get_openrouter_api_key`, +`pathlib.Path` import); new `pentestagent/cadis/sampler.py`;
+  new tests `tests/unit/cadis/test_sampler.py`, `tests/unit/config/test_openrouter_key.py`.
+  No other source touched. `newplan.md` untouched.
+- **Decisions (with governing section):**
+  1. Key source = `.env`/`OPENROUTER_API_KEY` (user directive), with `openrouterkey.txt`
+     as the newplan.md §6 fallback. Satisfies §6's `OPENROUTER_API_KEY` path exactly.
+  2. Sampler sets `temperature` explicitly and calls `litellm.acompletion` directly
+     rather than via `LLM.generate`, so `openrouter/anthropic/*` still samples at T=0.7
+     (CadisClaude.md §6.1; newplan.md §6 — the temperature-drop caveat noted at S1).
+  3. OpenRouter-only hard guard on the model string enforces "no local path / no
+     fallback" (newplan.md §6; §17 fidelity item).
+- **Deviations/ambiguities discovered:** `OPENROUTER_API_KEY` is **not present in `.env`**
+  (keys there: OPENAI/ANTHROPIC/GEMINI/TAVILY/PENTESTAGENT_MODEL). The loader currently
+  resolves the key from the git-ignored `openrouterkey.txt` fallback (verified present,
+  len 73) — so a live call is technically possible, but the live smoke was **deferred at
+  user request**. No methodology deviation.
+- **Resolution:** n/a. `.gitignore` updated earlier to exclude `openrouterkey.txt` so the
+  secret can never be committed; the key value is never printed (tests assert on length only).
+- **Tests/checks performed:**
+  - `pytest tests/unit/cadis/test_sampler.py tests/unit/config/test_openrouter_key.py -q`
+    → **18 passed** (canonical extraction, OpenRouter-only guard, identical-samples⇒USC=0,
+    explicit-temperature + seed propagation, transient retry, non-transient error⇒not-ok,
+    transient classification; env-priority / strip / file-fallback for the loader).
+  - `pytest tests/unit/cadis tests/unit/config -q` → **136 passed** (no regressions).
+  - `ruff check` clean; `black` clean.
+  - Import smoke: `get_openrouter_api_key()` resolves; `SelfConsistencySampler('gpt-4o')`
+    raises (OpenRouter-only guard). **No live API call made.**
+- **Current status:** **S5 code complete; gate PARTIALLY met.** Mocked-path verified; the
+  live-smoke portion of the gate is **deferred** until the user adds `OPENROUTER_API_KEY`
+  to `.env` (or authorises using the `openrouterkey.txt` fallback) and a model is chosen.
+  Model pin stays `null` in `cadis.yaml` until freeze (S13).
+- **Next planned step:** **S6 — integrate the CADIS gate at the action seam.** Add an
+  optional `action_gate` callback to `BaseAgent` (default `None` = unchanged production);
+  invoke it per proposed action in `_run_loop` between `llm.generate(...)` and
+  `_execute_tools(...)`. Wire `cadis/operator.py` (L1 notify via `interface/notifier.py`;
+  L2/L3 via scripted operator in benchmark / `WAITING_INPUT` interactive). This modifies
+  shared production code (`base_agent.py`) — confirm approach with user before editing.
+
+---
+
 ### 2026-09-10 — [Stage S4] CADIS core implemented (signals + pure fusion/mapping core + config); unit tests green
 
 - **Completed:** built the CADIS package from scratch, directly into the conformed shape (N=5,
