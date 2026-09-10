@@ -36,6 +36,54 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 
 ## Session log (newest first)
 
+### 2026-09-10 — [Stage S9] Per-step recorder (full §14 row) + gate wiring; duration/error captured
+
+- **Completed:**
+  - `pentestagent/cadis/recorder.py` — `RunRecorder` persists **one JSON line per proposed
+    action** to `raw_runs/<condition>/<target>/rep_<n>/steps.jsonl`, plus `meta.json` and a
+    `summary.json`. `StepRow` carries the **complete newplan.md §14 field set**
+    (`step_id, timestamp, target, condition, seed, proposed_action, usc, fh, rc, w1,w2,w3,
+    tau0,tau1,tau2, i_t, band_level, risk_floor, final_level, human_decision, outcome_class,
+    duration_ms, error`) plus useful extras (`risk_tier, risk_matched, n_samples, executed`).
+    `SECTION_14_FIELDS` is asserted present in tests (the S9 gate). Helpers: `levels()`
+    (feeds `RandomBudget.from_levels` for the C3 control), `human_effort_ratio()` (HER),
+    `from_config()` (pulls weights/thresholds from `CadisConfig`).
+  - `pentestagent/cadis/gate.py` — `GateRecord` now carries `duration_ms` (execution time,
+    via new `_timed_execute`) and `error`; `CadisGate` accepts an optional `recorder` and
+    calls `recorder.record(gate_record)` per action. Zero behaviour change when unset.
+- **Files/components changed:** modified `pentestagent/cadis/gate.py` (+`_timed_execute`,
+  `GateRecord.duration_ms/error`, `recorder` param + call); new
+  `pentestagent/cadis/recorder.py`; new `tests/unit/cadis/test_recorder.py`. `newplan.md`
+  untouched.
+- **Decisions (with governing section):**
+  1. Rows written as JSONL (one object per line) so runs stream to disk and the ablation
+     re-scores logs offline without re-running (newplan.md §11, §14; CadisClaude.md §8.2).
+  2. Weights/thresholds are logged **per row** (not just in meta) so each row is
+     self-contained for offline re-scoring under alternative `(w, τ)` grids.
+  3. `duration_ms` = execution duration of the tool call (0 for blocked/delegated actions),
+     aligning with the outcome; sampling latency is captured separately in the sampler's
+     `CallLog` (§14 / §6).
+- **Deviations/ambiguities discovered:** none. (One test bug — used `.outcome` instead of
+  the `StepRow.outcome_class` field — fixed immediately.)
+- **Resolution:** n/a.
+- **Tests/checks performed:**
+  - `pytest tests/unit/cadis/test_recorder.py -q` → all pass, incl. **every §14 field present
+    in the on-disk JSON line**, per-row weights/thresholds, meta/summary written,
+    `levels()`/HER correct, namespaced incrementing `step_id`s, and a **live gate→recorder
+    integration** (a gated call writes one row with `outcome_class=success`, `duration_ms>=0`).
+  - `pytest tests/unit/cadis tests/unit/agents -q` → **158 passed** (no regressions).
+  - `ruff`/`black` clean.
+- **Current status:** **S9 complete — gate passed** (a run writes every §14 field; gate wired
+  to the recorder).
+- **Next planned step:** **S10 — benchmark runner.** `benchmark/run/{driver.py,
+  orchestrate.py}`: `driver` runs one `(condition, target, rep)` — reset target → build the
+  condition policy + gate (+recorder) → run the agent loop under the gate → close the
+  recorder; `orchestrate` plans the **4 × 3 × R≥3** matrix with **CADIS-first** ordering
+  (so the random condition's budget is known), distinct seeds per rep, `--list`/`--dry`/full,
+  resumable. Gate: a dry run plans the exact matrix with no LLM calls.
+
+---
+
 ### 2026-09-10 — [Stage S8] Four benchmark conditions implemented (policies); execution cadence agreed
 
 - **Execution cadence (agreed with user):** proceed autonomously through **S8→S13**
