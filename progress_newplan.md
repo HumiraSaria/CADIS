@@ -36,6 +36,69 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 
 ## Session log (newest first)
 
+### 2026-09-10 — [Stage S6] CADIS gate integrated at the action seam (default-off) + operator protocol; S5 live smoke closed; model pinned
+
+- **Completed:**
+  - **Action seam (default-off):** added an optional `action_gate` callback to
+    `BaseAgent.__init__` and a `_dispatch_tool_calls()` helper; `_run_loop` now calls
+    `_dispatch_tool_calls(response.tool_calls)` between LLM proposal and execution. When
+    `action_gate is None` (production default) behaviour is **byte-for-byte unchanged**
+    (verified — the existing `tests/integration/test_agent_loop.py` still passes). The
+    same gated path runs for all conditions; only the installed policy differs (C7).
+  - `pentestagent/cadis/operator.py` — `Operator` interface; `ScriptedOperator`
+    (deterministic; L2 approve/reject via injectable `should_approve`, L3 handoff — the
+    benchmark path, deviation D2) and `InteractiveOperator` (notifier + fail-safe
+    reject/handoff when no human is wired). `OperatorDecision`/`OperatorResponse`.
+  - `pentestagent/cadis/gate.py` — `CadisGate(engine, operator, policy=cadis_policy,
+    sampler=None, notify_fn=None)`: per proposed call → `canonical_tool_call` →
+    optional N-sample USC → `engine.score` → `policy(score)` → route L0 execute /
+    L1 notify+execute / L2 approve|edit|reject / L3 delegate; updates within-run FH
+    history for executed calls; keeps `GateRecord`s (S9 recorder will persist them).
+    The **only** CADIS module importing host-agent types; the scoring core stays
+    agent-agnostic. `cadis_policy` (default) = `score.final_level`; the 4 conditions
+    plug in as alternative policies at S8.
+  - `sampler.py` — factored out `canonical_tool_call()` (single tool call → stable
+    string) so the gate can canonicalise one proposed call; `canonical_action` (message
+    level) now delegates to it.
+  - **S5 gate fully closed:** ran a live OpenRouter smoke with the pinned model — 3
+    samples returned, `batch.ok=True`, **T=0.7 honoured**, latency/tokens/status logged.
+  - **Model pinned:** `cadis.yaml` `model.slug: openrouter/deepseek/deepseek-v4-flash`
+    (the only authorised model — user directive). Formal freeze/pre-registration still S13.
+- **Files/components changed:** modified `pentestagent/agents/base_agent.py`
+  (+`action_gate` param, +`_dispatch_tool_calls`, seam call in `_run_loop`);
+  new `pentestagent/cadis/operator.py`, `pentestagent/cadis/gate.py`; modified
+  `pentestagent/cadis/sampler.py` (+`canonical_tool_call`), `pentestagent/cadis/cadis.yaml`
+  (model pin); new tests `tests/unit/cadis/test_operator.py`, `tests/unit/cadis/test_gate.py`,
+  `tests/unit/agents/test_action_gate.py`. No other production code touched. `newplan.md` untouched.
+- **Decisions (with governing section):**
+  1. Gate installed as a plain async callback (agent<->CADIS separability; production
+     unchanged when unset) — CadisClaude.md §8.3; newplan.md §6.
+  2. Gate fully owns the execution step when present (executes approved calls, synthesises
+     results for blocked ones), keeping the `base_agent` change to a single branch.
+  3. Condition policy (Decision→level) is injected into the gate; floor semantics belong to
+     each condition's policy (so full_autonomy has no floor, random keeps CRITICAL) — §7.
+  4. Pinned model = `openrouter/deepseek/deepseek-v4-flash` (user directive; the sole allowed
+     model). Recorded in `cadis.yaml`; snapshotted at freeze (newplan.md §6, §16).
+- **Deviations/ambiguities discovered:** none new. (Smoke observed empty content on 2/3
+  samples due to the deliberately tiny 48-token smoke cap + deepseek reasoning; the sampler
+  default is 1024 tokens — not a defect.)
+- **Resolution:** n/a.
+- **Tests/checks performed:**
+  - `pytest tests/unit/cadis tests/unit/agents tests/integration/test_agent_loop.py -q`
+    → **161 passed** (S6: 10 gate + 6 operator + 4 action-gate; integration loop unchanged).
+  - `ruff check` clean; `black` clean.
+  - Live smoke: `openrouter/deepseek/deepseek-v4-flash`, N=3 @ T=0.7 → `batch.ok=True`
+    (metadata logged; key from git-ignored fallback; value never printed).
+- **Current status:** **S6 complete — gate passed** (each of L0–L3 exercised via forced
+  policy + scripted operator; hook default-off verified). **S5 gate now fully met.**
+- **Next planned step:** **S7 — targets.** `benchmark/targets/{registry.py, reset.py}`:
+  `ensure_network()` (isolated Docker bridge + sandbox container) and `reset_target(name)`
+  (destroy + recreate from pinned image digest). 3 difficulty-spanning targets
+  (DVWA-class, Metasploitable-class, third web). Gate: `reset_target('dvwa-sqli')` restores
+  cleanly. **Requires Docker running** — will confirm availability before building.
+
+---
+
 ### 2026-09-10 — [Stage S5] OpenRouter execution layer: key loader + N=5/T=0.7 self-consistency sampler (live smoke deferred)
 
 - **Completed:** built the OpenRouter-only execution layer (newplan.md §6), except the
