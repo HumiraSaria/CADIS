@@ -36,6 +36,58 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 
 ## Session log (newest first)
 
+### 2026-09-10 — [Stage S10] Benchmark runner: matrix orchestrator (CADIS-first, resumable) + single-cell driver
+
+- **Completed:**
+  - `benchmark/run/orchestrate.py` — plans the matrix **4 conditions × targets × R** and
+    drives it. `plan_matrix()` enforces **CADIS-first** ordering per target (canonical
+    `RUN_ORDER = cadis, full_autonomy, static_hitl, random`), so the budget-matched Random
+    condition always has CADIS's levels first; **distinct seed per rep, shared across
+    conditions** (paired comparison). `pending_cells()` skips completed cells (resumable).
+    CLI: `--list` (plan only), `--dry` (plan + Docker/key env checks), full run;
+    `--conditions/--targets/--reps/--base-seed/--model/--out-root/--max-iterations`.
+    Refuses unknown conditions and `random` without `cadis` (newplan.md §7, §17).
+  - `benchmark/run/driver.py` — `run_cell(cell)`: reset target from digest → `build_gate`
+    (engine + classifier + N=5/T=0.7 sampler + ScriptedOperator + the condition's policy;
+    Random loads its budget via `load_cadis_budget` pooling CADIS's logged levels on that
+    target) + recorder → `build_agent_components` (RAG/MCP off) → install gate on
+    `agent.action_gate` → run `agent_loop(target.objective)` → close recorder → stop
+    runtime + teardown target. Host stack identical across conditions; only the policy
+    differs (C7).
+- **Files/components changed (new):** `benchmark/run/{orchestrate.py, driver.py}`;
+  `tests/unit/benchmark/{test_orchestrate.py, test_driver.py}`. No existing code touched.
+  `newplan.md` untouched.
+- **Decisions (with governing section):**
+  1. CADIS-first is structural in `plan_matrix` (target → RUN_ORDER → rep), guaranteeing the
+     Random budget exists before Random runs (newplan.md §7, §10).
+  2. Seed shared across conditions per rep (paired/repeated-measures on the same targets),
+     distinct across reps (newplan.md §10, §12).
+  3. Resumable via `summary.json` presence; a failed run is left incomplete and re-run next
+     pass (never silently counted) — newplan.md §10 validity rule.
+  4. RAG + external MCP disabled for benchmark runs (reproducibility; CadisClaude.md §9.3
+     freeze intent) — recorded so it is snapshotted at S13.
+- **Deviations/ambiguities discovered / OPEN ITEM for S14:** the DockerRuntime sandbox that
+  executes tools must be attached to `cadis-bench-net` to reach the target containers by IP.
+  This live-wiring is a **S14 pre-flight step** (documented in `driver.py`); it does not
+  affect S10's gate (the dry plan makes no LLM calls and needs no sandbox↔target link).
+- **Resolution:** logged as an S14 pre-flight task; not a methodology deviation.
+- **Tests/checks performed:**
+  - **S10 gate** (newplan.md §15 step 3): `python -m benchmark.run.orchestrate --list
+    --conditions full_autonomy,static_hitl,random,cadis` → planned **exactly 36 runs**
+    (4×3×3), CADIS-first per target, seeds 1001–1003 per rep, **no LLM calls**. Gate passed.
+  - `pytest tests/unit/benchmark -q` → **21 passed** (matrix size, CADIS-first, RUN_ORDER,
+    seed sharing, unknown/`random`-without-`cadis` rejection, resume-skip, out_dir layout;
+    driver `load_cadis_budget` pooling + `build_gate` for cadis/random).
+  - Full `pytest tests/unit -q` → **606 passed** (1 pre-existing benign warning). ruff/black clean.
+- **Current status:** **S10 complete — gate passed** (dry plan enumerates the exact matrix).
+- **Next planned step:** **S11 — analysis pipeline.** `benchmark/run/analyse.py`: read
+  `raw_runs/**/steps.jsonl`, compute per-run then by-condition **TCR / HCR (pre-registered
+  cascade, N=3) / HER**, secondary **TTC / ECE (CADIS only)**, IAS blind export; **offline
+  ablation** re-scoring over a `(w, τ, sim)` grid via the pure `policy_core` functions; and
+  **calibration** (ECE + reliability diagram). Gate: reproduces metrics from a sample run.
+
+---
+
 ### 2026-09-10 — [Stage S9] Per-step recorder (full §14 row) + gate wiring; duration/error captured
 
 - **Completed:**
