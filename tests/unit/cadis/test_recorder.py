@@ -14,7 +14,7 @@ _T = (0.25, 0.50, 0.75)
 
 def _gr(
     action="whois x",
-    level=0,
+    level=None,
     final_level=0,
     executed=True,
     outcome="success",
@@ -24,13 +24,16 @@ def _gr(
     risk_floor=0,
     rc=0.0,
 ):
+    # applied level (GateRecord.level) defaults to CADIS's computed final_level
+    # (applied == computed for CADIS); pass `level` explicitly to make them differ.
+    applied = final_level if level is None else level
     score = ScoreResult(
         proposed_action=action,
         usc=0.1,
         fh=0.0,
         rc=rc,
         intervention_score=0.05,
-        band_level=level,
+        band_level=final_level,
         risk_floor=risk_floor,
         final_level=final_level,
         risk_tier="low",
@@ -40,7 +43,7 @@ def _gr(
     return GateRecord(
         action=action,
         score=score,
-        level=level,
+        level=applied,
         executed=executed,
         decision=decision,
         operator_note=None,
@@ -48,6 +51,24 @@ def _gr(
         duration_ms=duration_ms,
         error=error,
     )
+
+
+def test_final_level_is_applied_not_cadis_computed(tmp_path):
+    # HER-bug regression: full_autonomy-style cell where CADIS would compute L2 but the
+    # condition applied L0 -> row.final_level must be the APPLIED 0, cadis_level the 2.
+    rec = RunRecorder(tmp_path, "full_autonomy", "dvwa-sqli", 1, 0, _W, _T)
+    row = rec.record(_gr(level=0, final_level=2))
+    assert row.final_level == 0  # applied (what full_autonomy did)
+    assert row.cadis_level == 2  # what CADIS would have done
+    assert rec.human_effort_ratio() == 0.0  # HER reflects the applied level
+
+
+def test_empty_steps_file_created_for_zero_action_run(tmp_path):
+    # 0-action run must still be discoverable (the Random n=8 fix): steps.jsonl exists.
+    rec = RunRecorder(tmp_path, "random", "dvwa-sqli", 2, 1002, _W, _T)
+    assert rec.steps_path.is_file()
+    assert rec.steps_path.read_text(encoding="utf-8") == ""
+    rec.close(completed=False)
 
 
 def test_records_all_section14_fields(tmp_path):

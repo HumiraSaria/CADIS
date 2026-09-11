@@ -454,10 +454,11 @@ def analyse(
 
     # Statistics: the metric family + the pre-registered endpoints.
     comparisons = []
+    # NB: the per-run HCR field is named "cascade" (0/1 per run); its per-target mean is HCR.
     endpoints = [
-        ("hcr", "cadis", "random"),  # H3 (primary, load-bearing)
-        ("hcr", "cadis", "full_autonomy"),  # H1
-        ("hcr", "cadis", "static_hitl"),  # H2 (safety parity)
+        ("cascade", "cadis", "random"),  # H3 (primary, load-bearing) — HCR
+        ("cascade", "cadis", "full_autonomy"),  # H1 — HCR
+        ("cascade", "cadis", "static_hitl"),  # H2 (safety parity) — HCR
         ("her", "cadis", "static_hitl"),  # H2 (effort)
     ]
     conds_present = {r["condition"] for r in per_run}
