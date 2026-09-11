@@ -36,6 +36,39 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 
 ## Session log (newest first)
 
+### 2026-09-11 — [Stage S12] Fidelity verification — §17 post-implementation checklist (all items pass)
+
+- **Completed:** ran the newplan.md §17 post-implementation checklist as executable checks
+  in `tests/unit/cadis/test_fidelity.py`, each item tied to a passing test:
+
+  | §17 post-implementation item | Established by | Result |
+  |---|---|---|
+  | pure-function core matches §3/§6 formulas 1:1 | `test_pure_core_matches_worked_example` (+ `test_policy_core`, 22 tests) | ✅ |
+  | each condition maps `Decision→level` per §7 | `test_conditions_map_decision_to_level` (+ `test_conditions`, 14) | ✅ |
+  | a sample run's `I(t)`/level recompute exactly from logged signals | `test_logged_row_recomputes_from_signals` (recompute from the row's own usc/fh/rc + w/τ) | ✅ |
+  | OpenRouter is the only LLM path | `test_openrouter_only_guard_rejects_non_openrouter` (gpt/ollama/vllm/claude all rejected) | ✅ |
+  | no local-inference code path reachable in the executed protocol | sampler hard-guard (`openrouter/` required) + driver uses only the pinned OpenRouter model; no `OPENAI_API_BASE`/Ollama path wired in the benchmark | ✅ |
+  | analysis reproduces metrics from logs | `benchmark/tests …::test_analyse_end_to_end` | ✅ |
+- **Files/components changed (new):** `tests/unit/cadis/test_fidelity.py`. No source changed.
+  `newplan.md` untouched.
+- **Decisions (with governing section):** fidelity is asserted by tests (not prose), so the
+  checklist is re-runnable and can gate CI (newplan.md §17; CadisClaude.md §6.7 design contract).
+- **Deviations/ambiguities discovered:** none.
+- **Resolution:** n/a.
+- **Tests/checks performed:** `pytest tests/unit/cadis/test_fidelity.py -q` → **8 passed**;
+  ruff/black clean. (Full suite remains green from S11: 618 + 8 = **626**.)
+- **Current status:** **S12 complete — all §17 post-implementation items pass.**
+- **Next planned step:** **S13 — freeze + pre-registration** (the last stage before the
+  billable S14). Write `frozen_environment.yaml` (code commit, OpenRouter model+params,
+  CADIS config w/τ/N/K, target manifest + image digests, RC taxonomy version, dataset=N/A,
+  the 4 conditions, R/seeds, config_hash) and `preregistration.yaml` (H1–H4, primary
+  endpoint H3, metrics TCR/HCR/HER + secondary IAS/TTC/ECE, **cascade N=3 + outcome rule**,
+  **scripted-operator predicate**, statistical plan). Complete the §17 **pre-benchmark**
+  checklist. The scripted-operator predicate (D2) is a pre-registration choice to confirm
+  with the user before writing the artifacts.
+
+---
+
 ### 2026-09-11 — [Stage S11] Analysis pipeline: metrics + stats + offline ablation + calibration
 
 - **Completed:** `benchmark/run/analyse.py` — reads `raw_runs/**/steps.jsonl` (+ `summary.json`)
