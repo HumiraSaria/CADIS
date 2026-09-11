@@ -172,6 +172,11 @@ def reset_target(
         [
             "run",
             "-d",
+            # -i -t keep containers whose CMD ends in an interactive shell alive
+            # (e.g. Metasploitable2's `services.sh && bash`); harmless for the
+            # foreground-server images (DVWA/Juice-Shop).
+            "-i",
+            "-t",
             "--name",
             target.container,
             "--network",
