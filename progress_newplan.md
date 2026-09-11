@@ -36,6 +36,65 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 
 ## Session log (newest first)
 
+### 2026-09-11 — [Stage S11] Analysis pipeline: metrics + stats + offline ablation + calibration
+
+- **Completed:** `benchmark/run/analyse.py` — reads `raw_runs/**/steps.jsonl` (+ `summary.json`)
+  and computes everything newplan.md §10–§12 asks for, depending only on numpy + scipy
+  (no pandas/matplotlib):
+  - **Primary metrics** per run → by condition: **HER** (fraction of actions at level ≥1),
+    **HCR** (pre-registered cascade = ≥ N=3 consecutive `failure` outcomes), **TCR** (from a
+    per-run `completed` oracle in `summary.json`).
+  - **Secondary:** **TTC** (summed step durations), **ECE** (CADIS only) + reliability bins.
+  - **Offline ablation** (`ablate`): re-scores the logged `(USC, FH, RC)` under a `(w, τ)`
+    grid via the **pure** `policy_core` functions — recomputing level/HER/ECE with **no
+    re-runs** (newplan.md §11); the load-bearing property of the JSONL logs.
+  - **Statistics** (`compare`): paired across the shared target set (mean per target over
+    reps), Wilcoxon (t-test fallback), Cohen's *dz* effect size, bootstrap 95% CI, and
+    **Holm** multiple-comparison correction over the endpoint family. Primary endpoint
+    **H3 (CADIS vs Random on HCR)**; also H1 (vs full_autonomy) and H2 (vs static_hitl on
+    HCR + HER).
+  - **Artifacts written:** `results/metrics_per_run.csv`,
+    `results/metrics_by_condition_summary.csv`, `results/statistical_comparisons.json`,
+    `results/calibration/{reliability.json, reliability.svg}` (hand-built SVG, no matplotlib),
+    `ablation/weight_threshold_grid.csv`. CLI:
+    `python -m benchmark.run.analyse --runs <root>/raw_runs --meta <root>`.
+- **Files/components changed (new):** `benchmark/run/analyse.py`;
+  `tests/unit/benchmark/test_analyse.py`. No existing code touched. `newplan.md` untouched.
+- **Decisions (with governing section):**
+  1. Confirmatory endpoints fixed in code as H1/H2/H3; anything else is exploratory
+     (newplan.md §12 confirmatory-vs-exploratory separation).
+  2. Cascade = ≥N=3 consecutive `failure` outcomes; the invalid-command-vs-environmental
+     refinement of the failure class is finalised in the pre-registered outcome rule at S13
+     (newplan.md §12; CadisClaude.md Q2). `--cascade-n` is exposed for exploratory checks.
+  3. Ablation and calibration run **only** on logged signals via the pure core — never a
+     re-run (newplan.md §11; §17 fidelity: a sample run's `I(t)`/level recompute from logs).
+  4. Reliability diagram emitted as JSON + SVG (matplotlib absent) — keeps the pipeline
+     dependency-light and reproducible.
+- **Deviations/ambiguities discovered / OPEN ITEM for S14:** **TCR needs a per-run
+  `completed` oracle** — a target-specific success check the **driver must write into
+  `summary.json` at S14** (e.g. DVWA hashes extracted, vsftpd shell obtained). Until then
+  TCR reports over whatever `completed` fields exist (`tcr_coverage` surfaces this). Logged
+  as an S14 pre-flight item; not a methodology deviation (the metric is defined; only its
+  oracle is produced at run time).
+- **Resolution:** logged as an S14 pre-flight task (alongside the sandbox↔`cadis-bench-net`
+  wiring from S10).
+- **Tests/checks performed:**
+  - `pytest tests/unit/benchmark/test_analyse.py -q` → **12 passed** — the **S11 gate**:
+    end-to-end `analyse()` on synthetic sample runs reproduces the metrics (cadis HCR 0.0,
+    full_autonomy HCR 1.0) and writes every artifact; plus HER, `has_cascade` (N=3
+    consecutive, broken-by-success negative), TTC, a **known-ECE=0.1** case, ablation grid
+    size + default-row `I=0.446→L2→HER 1.0`, by-condition HCR/HER/TCR, paired `compare`
+    mean-diff, and Holm correction `[0.01,0.04,0.03]→[0.03,0.06,0.06]`.
+  - Full `pytest tests/unit -q` → **618 passed** (1 pre-existing benign warning). ruff/black clean.
+- **Current status:** **S11 complete — gate passed** (reproduces metrics from sample runs).
+- **Next planned step:** **S12 — fidelity verification.** Run the newplan.md §17
+  post-implementation checklist: pure core matches §3/§6 1:1 (unit tests); each condition
+  maps Decision→level per §7; a sample run's `I(t)`/level recompute exactly from logged
+  signals; OpenRouter is the only LLM path; no reachable local-inference path; analysis
+  reproduces metrics from logs. Record the signed checklist.
+
+---
+
 ### 2026-09-10 — [Stage S10] Benchmark runner: matrix orchestrator (CADIS-first, resumable) + single-cell driver
 
 - **Completed:**
