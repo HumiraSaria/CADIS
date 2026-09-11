@@ -22,7 +22,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from benchmark.targets.registry import get_target
+from benchmark.targets.registry import BENCH_NETWORK, get_target
 from pentestagent.cadis.conditions import RandomBudget, get_condition_policy
 from pentestagent.cadis.config import load_config
 from pentestagent.cadis.engine import CadisEngine
@@ -84,6 +84,32 @@ def build_gate(
     return gate, recorder
 
 
+def _connect_sandbox_to_network(runtime: Any, network: str = BENCH_NETWORK) -> None:
+    """Attach the DockerRuntime sandbox to the isolated benchmark network.
+
+    S14 pre-flight: tools run inside the sandbox container, which by default sits on the
+    plain bridge and cannot reach the targets on ``cadis-bench-net``. Connecting it here
+    lets the agent reach targets by their IP/container name. Idempotent + best-effort.
+    """
+    try:
+        client = getattr(runtime, "client", None)
+        container = getattr(runtime, "container", None)
+        if client is None or container is None:
+            return
+        container.reload()
+        nets = container.attrs.get("NetworkSettings", {}).get("Networks", {})
+        if network not in nets:
+            client.networks.get(network).connect(container)
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - best-effort; a live run surfaces reachability
+        import logging
+
+        logging.getLogger("cadis.benchmark.driver").warning(
+            "could not attach sandbox to %s: %s", network, e
+        )
+
+
 async def run_cell(
     cell: Any,
     *,
@@ -94,7 +120,15 @@ async def run_cell(
 ) -> dict:
     """Execute one benchmark cell end-to-end and return the run summary."""
     from benchmark.targets.reset import reset_target, teardown_target
+    from pentestagent.config.constants import get_openrouter_api_key
     from pentestagent.interface.initializer import build_agent_components
+
+    # Ensure the OpenRouter key is exported to the environment so BOTH the agent LLM
+    # (LiteLLM openrouter/*) and the sampler can authenticate (newplan.md section 6).
+    if not get_openrouter_api_key():
+        raise RuntimeError(
+            "OPENROUTER_API_KEY not available (set it in .env or openrouterkey.txt)"
+        )
 
     target = get_target(cell.target)
 
@@ -123,12 +157,20 @@ async def run_cell(
     agent.max_iterations = max_iterations
     agent.action_gate = gate
 
+    # 3b. Attach the sandbox to the isolated benchmark network so tools reach the target.
+    if docker:
+        _connect_sandbox_to_network(components.get("runtime"))
+
     # 4. Run the agent loop against the target objective (sample 0 executes).
+    #    Track self-reported task completion for TCR (newplan.md section 12 oracle).
+    completed = False
     try:
-        async for _ in agent.agent_loop(target.objective):
-            pass
+        async for msg in agent.agent_loop(target.objective):
+            meta = getattr(msg, "metadata", None) or {}
+            if meta.get("task_complete"):
+                completed = True
     finally:
-        summary = recorder.close()
+        summary = recorder.close(completed=completed)
         try:
             runtime = components.get("runtime")
             if runtime is not None:

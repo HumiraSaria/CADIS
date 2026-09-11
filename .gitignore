@@ -100,3 +100,6 @@ pentestagent/mcp/mcp_servers.json
 
 # Local OpenRouter API key file (never commit)
 openrouterkey.txt
+
+# Benchmark raw runs (regenerable, large; never commit)
+benchmark/runs*/
