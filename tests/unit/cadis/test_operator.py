@@ -44,7 +44,7 @@ async def test_interactive_failsafe_handoff_at_l3():
 
 
 async def test_interactive_uses_human_decision_fn():
-    async def human(*, level, action, tool_call):
+    async def human(*, level, action, tool_call, score=None):
         return OperatorResponse(
             OperatorDecision.EDIT, edited_arguments={"command": "safe"}
         )

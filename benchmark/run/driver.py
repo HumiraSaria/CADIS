@@ -27,7 +27,7 @@ from pentestagent.cadis.conditions import RandomBudget, get_condition_policy
 from pentestagent.cadis.config import load_config
 from pentestagent.cadis.engine import CadisEngine
 from pentestagent.cadis.gate import CadisGate
-from pentestagent.cadis.operator import ScriptedOperator
+from pentestagent.cadis.operator import BenchmarkOperator
 from pentestagent.cadis.recorder import RunRecorder
 from pentestagent.cadis.sampler import SelfConsistencySampler
 from pentestagent.cadis.signals.risk import RiskClassifier
@@ -69,7 +69,7 @@ def build_gate(
         temperature=cfg.temperature,
         base_seed=seed,
     )
-    operator = ScriptedOperator()  # pre-registered predicate finalised at S13
+    operator = BenchmarkOperator()  # pre-registered L2 rule (D2), finalised at S13
 
     if condition == "random":
         budget = load_cadis_budget(out_root, target_id)

@@ -47,7 +47,7 @@ class FakeAgent:
 
 
 class EditOperator(Operator):
-    async def review(self, *, level, action, tool_call):
+    async def review(self, *, level, action, tool_call, score=None):
         return OperatorResponse(
             OperatorDecision.EDIT, edited_arguments={"command": "whoami"}
         )
