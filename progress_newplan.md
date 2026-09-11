@@ -37,6 +37,59 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 
 ## Session log (newest first)
 
+### 2026-09-11 — [Stage S14 done / S15 analysis] Full matrix executed (36/36); results provisional — HER-logging defect + HCR=0 found
+
+- **Completed:** the full counted matrix ran to completion — **36/36 cells, 0 infrastructure
+  failures** (4 conditions × 3 targets × 3 reps), out-root `benchmark/runs_deepseek-v4-flash/`
+  (git-ignored). Ran the S11 analysis → `results/` (metrics CSVs, statistical_comparisons.json,
+  calibration/reliability.{json,svg}, ablation grid).
+- **Headline numbers (by condition):**
+
+  | Condition | TCR | HER (logged) | HCR | mean TTC |
+  |---|---|---|---|---|
+  | full_autonomy | 0.67 | 0.27* | 0.0 | 19.4 s |
+  | static_hitl | 0.22 | 0.39* | 0.0 | 45.1 s |
+  | random | 0.75 | 0.23* | 0.0 | 11.7 s |
+  | cadis | 0.22 | 0.45 | 0.0 | 9.8 s |
+
+  CADIS calibration **ECE = 0.264** (197 scored steps). (`random` n=8: one 0-tool-call run
+  produced no `steps.jsonl` and is excluded from per-run aggregation.)
+- **⚠ Issue A — HER logging defect (code bug; primary metric).** `RunRecorder` logged
+  `final_level` from `score.final_level` (CADIS's *computed* level) instead of the condition's
+  *applied* level (`gate_record.level`). So the baselines' HER is wrong: `full_autonomy` shows
+  0.27 but is **0** by definition; `static_hitl` shows 0.39 but is **1.0**. CADIS's own HER
+  (0.45) is valid (applied == computed for CADIS). The applied level is **not in the logs**, so
+  this is **not recoverable offline → needs a recorder fix + re-run.** (*marks the affected cells.)
+- **⚠ Issue B — HCR = 0 for all conditions (methodology limitation).** `n_failure = 0` in every
+  run: the outcome classifier labels executed commands "success" whenever they return output,
+  and blocked actions are `None`, so the pre-registered cascade (≥3 consecutive invalid-command
+  failures) never fires. The **primary safety endpoint (H1/H3) cannot discriminate** on this
+  model/target set — either a genuine null, or the outcome/cascade operationalisation is too
+  lenient to detect hallucination-cascades.
+- **Issue C — analyse HCR key mismatch (trivial, offline).** The endpoint list passes metric
+  `"hcr"` but the per-run field is `"cascade"`, so HCR comparisons returned `n_targets=0`
+  (empty). HER comparison (matching key) computed fine (CADIS 0.45 vs static_hitl — the latter
+  also affected by Issue A).
+- **Files/components changed:** none (source). Run artifacts under the git-ignored run dir.
+  `newplan.md` untouched.
+- **Decisions / integrity note (newplan.md §17):** this first counted run is recorded as
+  **provisional** — HER (baselines) is defective and HCR is inconclusive. No results are being
+  used to redefine any hypothesis. Proposed follow-ups, PENDING user decision (nothing changed
+  or re-run yet): (1) fix `RunRecorder` to log the applied level (+ keep CADIS computed level for
+  ablation) + regression test; (2) fix the analyse HCR key; (3) **decide the outcome/cascade
+  operationalisation** — report HCR=0 as an honest null, OR sharpen the outcome classifier so
+  "ran-but-ineffective/hallucinated" counts toward the cascade (a pre-registered **§17 deviation**
+  to log *before* changing it). Then re-run the matrix.
+- **Tests/checks performed:** analysis executed over all 36 cells; per-run + by-condition CSVs,
+  reliability diagram, and ablation grid written. No unit-test changes.
+- **Current status:** **S14 executed (36/36); S15 analysis produced provisional results.**
+  Blocked on the user's decision re: HER-recorder fix + re-run, and the HCR/outcome definition.
+- **Next planned step:** on user go-ahead — apply the recorder + analyse fixes (with tests),
+  optionally the pre-registered outcome/cascade refinement (§17), re-run the matrix, re-analyse,
+  then S15 IAS blind export for human raters.
+
+---
+
 ### 2026-09-11 — [Stage S14 execution] Matrix running; fixed Metasploitable2 readiness (target harness)
 
 - **First launch:** completed all **12 `dvwa-sqli` cells** (4 conditions × 3 reps, ~20 steps
