@@ -37,6 +37,39 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 
 ## Session log (newest first)
 
+### 2026-09-11 — [Stage S14 v2] Fixes applied (HER/n=8/HCR-key) + re-freeze; fresh 36-run matrix relaunched
+
+- **User directive:** fix the recorder + HCR key, verify the Random n=8, re-freeze, re-run all
+  36 — and **do NOT change the pre-registered HCR definition**. All done as specified.
+- **Random n=8 verified:** `random/dvwa-sqli/rep_2` had **0 recorded actions** (agent proposed
+  no tool calls; `steps.jsonl` was never created), so `iter_runs` (globbing `steps.jsonl`)
+  silently dropped it → analysis saw 8/9. Root cause = silent-drop, not a lost run.
+- **Fixes (code defects, not methodology):**
+  - `recorder.py`: `StepRow.final_level` now = the condition's **applied** level
+    (`gate_record.level`); added `cadis_level` (= CADIS computed level) for ablation. Corrects
+    HER for the baselines (full_autonomy→0, static_hitl→1.0; CADIS's 0.45 was already valid).
+    Also writes an **empty `steps.jsonl` on init** so 0-action runs are discoverable (n=8 fix).
+  - `analyse.py`: HCR endpoints use the per-run field `"cascade"` (was `"hcr"` → empty
+    comparisons). **Cascade/outcome definition unchanged** (N=3, failure classes) per directive.
+  - Regression tests: applied≠computed level logged distinctly; empty `steps.jsonl` created.
+- **Re-freeze:** `cadis_commit a0564e6`, `config_hash e190304`, `rc_taxonomy_version 0.1.1`
+  (unchanged), §17 pre-benchmark checklist all TRUE. Committed.
+- **Re-run:** renamed the provisional first run → `benchmark/runs_deepseek-v4-flash_v1_provisional`
+  (git-ignored, kept for reference); relaunched all **36 cells fresh** into
+  `benchmark/runs_deepseek-v4-flash/` (background, resumable).
+- **Files/components changed:** `pentestagent/cadis/recorder.py`, `benchmark/run/analyse.py`,
+  `tests/unit/cadis/test_recorder.py`, `benchmark/freeze/*` (re-frozen). Commits `a0564e6`
+  (fixes) + freeze commit. `newplan.md` untouched.
+- **Tests/checks performed:** `pytest tests/unit` → **650 passed**; ruff/black clean; freeze
+  checklist all pass.
+- **Current status:** **fixes in; protocol re-frozen; fresh 36-run matrix running.** HER will
+  now be correct per condition; HCR remains under the unchanged pre-registered definition
+  (expected to stay low/0 — an honest result, not to be redefined).
+- **Next planned step:** on matrix completion → re-run S11 `analyse` (corrected HER + populated
+  HCR comparisons), report metrics, then S15 IAS blind export.
+
+---
+
 ### 2026-09-11 — [Stage S14 done / S15 analysis] Full matrix executed (36/36); results provisional — HER-logging defect + HCR=0 found
 
 - **Completed:** the full counted matrix ran to completion — **36/36 cells, 0 infrastructure
