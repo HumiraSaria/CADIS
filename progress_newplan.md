@@ -31,11 +31,43 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 |----|------|-----------|------------------------|-------------------------|--------|
 | D1 | 2026-09-10 | OpenRouter-only LLM access replaces the local vLLM/Ollama backbone; the *same* pinned `openrouter/*` model is both the agent and the `N=5` self-consistency sampler. No local inference / no fallback. | CadisClaude.md G7, A3 (§3, §4, §10); **sanctioned by** newplan.md §6 | All LLM calls; freeze artifacts; S5 onward | Logged (pre-implementation) |
 | D2 | 2026-09-10 | L2/L3 blocking interventions are resolved by a **deterministic, pre-registered scripted operator policy** instead of live human operators, so the 4×3×R matrix is reproducible/tractable. Humans still perform the **blind IAS rating** (§13) on the logged CADIS routing decisions. HER is measured count-based (fraction of actions at level ≥1), unaffected by the operator model. | CadisClaude.md §9.2–§9.3 (step 5), §5.3; newplan.md §7, §13 | Conditions C2 (static_hitl) & C4 (cadis); S8, S14; HER; IAS | **Finalised & pre-registered at S13**: `BenchmarkOperator` — L2 reject iff invalid/unsafe/inappropriate, L3 handoff, CRITICAL→L3 |
-| D3 | 2026-09-11 | RC fail-safe (HIGH-on-unmatched) mis-classifies the agent's own framework/meta tool calls (`finish`, `notes`, `browser`, `web_search`) as HIGH, so gated conditions reject them — including `finish`, which structurally biases TCR to 0 under CADIS/Static-HITL. Proposed correction: classify framework meta-tools as LOW; keep fail-safe HIGH only for unrecognised **shell** commands (RC taxonomy v0.1.0 → v0.1.1, re-freeze). | CadisClaude.md §6.3 (RC classifies the offensive command; fail-safe for unmatched *commands*); newplan.md §17 | RC signal; all gated conditions; TCR; freeze artifacts | **Discovered at S14 pre-flight smoke; PENDING user decision before any counted run** |
+| D3 | 2026-09-11 | RC fail-safe (HIGH-on-unmatched) mis-classifies the agent's own framework/meta tool calls (`finish`, `notes`, `browser`, `web_search`) as HIGH, so gated conditions reject them — including `finish`, which structurally biases TCR to 0 under CADIS/Static-HITL. Proposed correction: classify framework meta-tools as LOW; keep fail-safe HIGH only for unrecognised **shell** commands (RC taxonomy v0.1.0 → v0.1.1, re-freeze). | CadisClaude.md §6.3 (RC classifies the offensive command; fail-safe for unmatched *commands*); newplan.md §17 | RC signal; all gated conditions; TCR; freeze artifacts | **APPLIED (user-approved) 2026-09-11** — tool-aware RC (`RiskClassifier.classify_for_tool`), `FRAMEWORK_TOOLS`→LOW, fail-safe HIGH only for `terminal` shell; taxonomy v0.1.1; **re-frozen** (config_hash `d557abd…`). No counted runs preceded the fix. |
 
 ---
 
 ## Session log (newest first)
+
+### 2026-09-11 — [Stage S14] D3 correction applied (tool-aware RC) + re-freeze; ready to launch counted matrix
+
+- **Completed (user chose "Fix RC, re-freeze, then run"):**
+  - **Tool-aware RC (D3 fix):** `RiskClassifier.classify_for_tool(tool_name, command,
+    canonical)` — framework/meta tools (`FRAMEWORK_TOOLS` = finish/notes/browser/web_search/
+    create_plan/read/report) → **LOW by identity**; `terminal` → classify the shell command
+    (fail-safe HIGH for unrecognised binaries, preserved); other tools → classify canonical.
+    Classifying by tool *identity* (not string patterns) avoids mis-scoring e.g. a `notes`
+    action whose text mentions "sudo". `engine.score(..., tool_name=, command=)` uses it;
+    the gate extracts `(tool_name, command)` from the raw call and passes them.
+  - **Taxonomy v0.1.0 → v0.1.1** (`risk_taxonomy.yaml` version bump + note).
+  - **Re-freeze:** regenerated `benchmark/freeze/*` — `rc_taxonomy_version: 0.1.1`, new
+    **config_hash `d557abd…`**, §17 pre-benchmark checklist still all TRUE.
+- **Files/components changed:** `pentestagent/cadis/signals/risk.py` (+`FRAMEWORK_TOOLS`,
+  `classify_for_tool`), `pentestagent/cadis/engine.py` (`score` tool-aware),
+  `pentestagent/cadis/gate.py` (pass tool_name/command), `pentestagent/cadis/risk_taxonomy.yaml`
+  (v0.1.1), `benchmark/freeze/*` (re-frozen), `tests/unit/cadis/test_risk_tool_aware.py` (new).
+  `newplan.md` untouched.
+- **Decisions (with governing section):** D3 correction recorded in the register **before**
+  the counted run (newplan.md §17); it removes the TCR confound and is the only post-S13
+  change. Verified: finish/browser/notes → RC 0.0; `nmap`→MED, `sudo`→CRIT, unknown binary→HIGH.
+- **Deviations/ambiguities discovered:** none new.
+- **Resolution:** D3 status → APPLIED in the register.
+- **Tests/checks performed:** `pytest tests/unit` → **648 passed** (incl. 4 new tool-aware RC
+  tests); ruff/black clean on all CADIS/benchmark code; freeze checklist all pass.
+- **Current status:** **D3 resolved; protocol re-frozen. Ready to execute the counted matrix.**
+- **Next planned step:** launch `benchmark.run.orchestrate --model
+  openrouter/deepseek/deepseek-v4-flash` (4×3×R=3 = 36 runs, CADIS-first, resumable) in the
+  background; then analyse (S11) + IAS export (S15). **Billable.**
+
+---
 
 ### 2026-09-11 — [Stage S14 pre-flight] Live wiring done; single smoke cell PASSED; ⚠ confound found (D3) — paused before counted runs
 
