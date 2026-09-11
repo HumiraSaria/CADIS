@@ -37,6 +37,29 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 
 ## Session log (newest first)
 
+### 2026-09-11 — [Stage S14 execution] Matrix running; fixed Metasploitable2 readiness (target harness)
+
+- **First launch:** completed all **12 `dvwa-sqli` cells** (4 conditions × 3 reps, ~20 steps
+  each, ~5 min/cell) with the D3-fixed protocol. Then every `msf2-vsftpd` cell failed reset:
+  "did not become ready within 120s".
+- **Root cause:** `reset_target` ran `docker run -d` without a tty; `tleemcjr/metasploitable2`
+  (CMD `sh -c /bin/services.sh && bash`) exits immediately when its trailing interactive bash
+  gets no tty → the container stops → port 21 never opens. DVWA/Juice-Shop run a foreground
+  server so were unaffected (hence dvwa's 12 cells passed).
+- **Fix (infra, not methodology):** added `-i -t` to the target `docker run` (`reset.py`).
+  Verified live: `msf2-vsftpd` ready in **~15s**. No re-freeze — image digests / signals /
+  conditions / metrics unchanged; `-it` is a no-op for the foreground-server targets, so the
+  12 completed dvwa cells remain valid and are skipped on resume.
+- **Relaunched** (resumable): now running the remaining **24 cells** (`msf2-vsftpd` +
+  `juice-shop`); confirmed `cadis-msf2-vsftpd` stays up and cells log steps normally.
+- **Files/components changed:** `benchmark/targets/reset.py` (+`-i -t`). Committed `8c82126`.
+- **Current status:** **S14 in progress — 12/36 cells done; 24 remaining running in the
+  background** (`benchmark/runs_deepseek-v4-flash/`). ETA a couple more hours.
+- **Next planned step:** on matrix completion → S11 `analyse` over `raw_runs/` → results/
+  metrics + stats + ablation + calibration; S15 IAS blind export for human raters.
+
+---
+
 ### 2026-09-11 — [Stage S14] D3 correction applied (tool-aware RC) + re-freeze; ready to launch counted matrix
 
 - **Completed (user chose "Fix RC, re-freeze, then run"):**
