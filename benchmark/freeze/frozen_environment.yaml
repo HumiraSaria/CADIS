@@ -1,4 +1,4 @@
-cadis_commit: 73636cb9c04baf98389817268492df258d3aa985
+cadis_commit: a0564e680c6fe24a6a8302264764df80a7f50500
 llm_access:
   provider: openrouter-only
   model: openrouter/deepseek/deepseek-v4-flash
@@ -72,4 +72,4 @@ package_versions:
   pyyaml: 6.0.3
   openai: 2.54.0
   docker: 7.2.0
-config_hash: d557abdfee0c0cd317514f1ba0b689ded5790f7c24ac330cada1113bd29c9d76
+config_hash: e1903044c41505eb982f2abd208d15bde4a01e4aa0f3c501ac802c017017db13
