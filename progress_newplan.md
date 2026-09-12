@@ -37,6 +37,29 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 
 ## Session log (newest first)
 
+### 2026-09-12 — [Stage S15] IAS rater hand-off prepared (step 1); blocked at the human rating step
+
+- **Completed (step 1 of the IAS close-out):** prepared the human-rater hand-off package —
+  two blank per-rater sheets (`ias_review/export_for_review/rater_{1,2}.blank.csv`, copies of the
+  367-row blind sheet) and a one-page `ias_review/RATER_BRIEF.md` (task, the 3-category rubric with
+  ex-ante judgement, blinding rules, save-as `rater_{1,2}_completed.csv`). Blank sheets are named so
+  they do **not** match the `rater_*_completed.csv` score glob → `score` correctly still reports
+  `status='pending'`.
+- **Blocked at step 2 (by design, not a defect):** IAS requires **≥2 independent *human* raters,
+  blind to condition** (newplan §13; CadisClaude §9.3 step 5). This is the one protocol step an
+  agent cannot perform — its scientific purpose is a *human* appropriateness oracle. Ratings were
+  **not** fabricated (doing so would invalidate the metric). Step 4 (reconciliation) likewise needs
+  a human adjudicator.
+- **Ready & automated for when ratings exist:** step 3 (`ias score` → Cohen's κ + reconciliation
+  worksheet) and step 5 (record κ + per-condition IAS, update FINAL_REPORT §8/§10, tick the §18
+  artifact) are push-button once ≥2 `rater_*_completed.csv` are provided.
+- **Files/components changed:** new `ias_review/export_for_review/rater_{1,2}.blank.csv`,
+  `ias_review/RATER_BRIEF.md`. No source changed; `newplan.md` untouched. No billable run.
+- **Current status:** S15 close-out is **hand-off-ready**; awaiting human raters (or an explicit
+  decision to defer IAS, or to run a clearly-labelled exploratory LLM-judge proxy as a §17
+  deviation — not done without approval).
+- **Next planned step:** collect ≥2 blind human ratings → run `ias score` → reconcile → record.
+
 ### 2026-09-12 — [Stage S15] Final report + §19 final-validation checklist (S15 report half complete)
 
 - **Completed:** authored the completion write-up
