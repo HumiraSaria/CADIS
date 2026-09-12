@@ -37,6 +37,36 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 
 ## Session log (newest first)
 
+### 2026-09-12 — [Stage S15] Final report + §19 final-validation checklist (S15 report half complete)
+
+- **Completed:** authored the completion write-up
+  `benchmark/results_deepseek-v4-flash/FINAL_REPORT.md` — the "report" half of stage S15
+  (newplan §18/§19). Self-contained but non-duplicating: links to `RESULTS.md`, the freeze
+  artifacts, the `ias_review/` package, the CADIS source, and this log rather than restating all
+  numbers. Sections: motivation/RQ/hypotheses (preserved from CadisClaude, unchanged); CADIS
+  mechanism; experimental design; results summary + confirmatory endpoints; **honest
+  interpretation** (H3/H1 inconclusive — no cascades; H2 effort strong-but-underpowered; H4 ECE
+  0.197 with the flat-observed caveat); deviation register (D1/D2/D3); exploratory limitations;
+  IAS status (export built, ratings pending); a **§18 research-artifacts inventory** (path +
+  in-git flag; raw_runs marked git-ignored/regenerable, IAS ratings ⏳); and a **§19
+  final-validation checklist** walked item-by-item — **all 11 items PASS** with cited evidence.
+- **Key framing (recorded for the record):** protocol fidelity (the §19 checklist) is orthogonal
+  to the scientific outcome — the protocol executed faithfully (11/11), while the *primary
+  endpoint* H3 is honestly **inconclusive** because the measured phenomenon (cascades) did not
+  occur (HCR=0 in all 36 runs). The RQ receives a **partial answer**: CADIS matches Random's
+  human-effort budget and costs far less effort than Static-HITL, but the central cascade-safety
+  claim is untested in this run. The pre-registered HCR/cascade definition was **not** changed
+  (user directive).
+- **Files/components changed:** new `benchmark/results_deepseek-v4-flash/FINAL_REPORT.md`. No
+  source changed; `newplan.md` untouched (verified: §19 item 10 holds — no results/conclusions
+  in `newplan.md`). All 17 relative links in the report verified to resolve. No billable run.
+- **Current status:** **S15 code/report work complete.** Two items remain, neither needing code:
+  (1) IAS human ratings (secondary, human-gated); (2) the primary-endpoint decision (accept
+  inconclusive H3/H1 per the standing directive, **or** a separate §17-pre-registered change +
+  billable re-run — user's call).
+- **Next planned step:** await the user's decision on the primary endpoint and/or collection of
+  ≥2 blind IAS raters. No further implementation is required to close S15 under option (a).
+
 ### 2026-09-12 — [Stage S15] IAS blind export + Cohen's κ / reconciliation scaffolding built
 
 - **Completed:** implemented the IAS tooling and generated the blind rater package to the
