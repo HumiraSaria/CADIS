@@ -37,6 +37,41 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 
 ## Session log (newest first)
 
+### 2026-09-12 — [Stage S15] Durable committed results snapshot + pre-registered IAS scope
+
+- **Completed:** created a **durable, committed results snapshot** at
+  `benchmark/results_deepseek-v4-flash/` (a non-git-ignored path; `benchmark/runs*/` stays ignored),
+  so the headline artifacts survive independent of the regenerable run dir. Copied **byte-identical**
+  (sha256-verified against `benchmark/runs_deepseek-v4-flash/results/`):
+  `metrics_per_run.csv`, `metrics_by_condition_summary.csv`, `statistical_comparisons.json`,
+  `calibration/reliability.{json,svg}`, `ablation/weight_threshold_grid.csv`. Authored a
+  self-contained `RESULTS.md` (provenance/repro block, headline metrics, confirmatory endpoints
+  H1–H4 with honest readings, statistical comparisons, calibration + caveat, ablation, per-target
+  completion, exploratory limitations, regenerate command, IAS-pending note).
+- **User decision (this session):** *snapshot only* now; IAS export deferred to the next S15 step.
+- **Pre-registered IAS scope (governs the deferred build; CadisClaude.md §9.3 step 5 / newplan §13):**
+  the blind export will cover **all 275 intervention decisions (final_level ≥ 1: cadis 48, random 33,
+  static_hitl 194; full_autonomy 0) plus a condition-stratified random sample of L0 non-interventions**,
+  **blind to condition and globally shuffled**, so all three rating categories
+  (*appropriate / should-have-intervened / unnecessary*) are measurable — an interventions-only export
+  could not register *should-have-intervened* (false negatives). Recorded **before** building per §17.
+  (Raw-log scope confirmed from logs: 635 total steps; final_level distribution 0→360, 1→6, 2→269;
+  no L3 fired; `human_decision` present on L2 rows as approve/reject.)
+- **Reconciliation (documentation only, no methodology change):** RESULTS.md reports **ECE = 0.197**
+  (precisely `0.19749`, matching the shipped `reliability.json`/`.svg` title) rather than the 0.198
+  used in the prose above — a 3-dp rounding of the same value; the shipped artifacts are authoritative.
+  RESULTS.md also notes that the CADIS-condition calibration ECE (0.197, 173 steps) differs by scope
+  from the ablation-grid ECE (0.201, 635 steps) — not a contradiction.
+- **Files/components changed:** new `benchmark/results_deepseek-v4-flash/**` (RESULTS.md + copied
+  artifacts). No source changed; `newplan.md` untouched. Run dir + `openrouterkey.txt` stay ignored.
+- **Tests/checks performed:** sha256 src==dst for the three copied text artifacts (match); all 9
+  RESULTS.md relative links resolve; no stray `0.198` remains in RESULTS.md. No billable run.
+- **Current status:** **S15 in progress** — results snapshot committed to the git record; primary
+  safety endpoint (H3/H1) remains inconclusive (no cascade events); IAS export scaffolding **not yet
+  built** (deferred by user this session, scope pre-registered above).
+- **Next planned step:** build the blind IAS export + Cohen's κ + reconciliation scaffolding per the
+  pre-registered scope above (a separate, non-billable step; requires ≥2 human raters to complete).
+
 ### 2026-09-12 — [Stage S14 complete / S15 results] Matrix 36/36; corrected metrics (HER valid); HCR null
 
 - **Completed:** resumed run finished — **36/36 cells, 0 failures, no n=8 drop, docker clean.**
