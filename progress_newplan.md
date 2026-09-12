@@ -37,6 +37,35 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 
 ## Session log (newest first)
 
+### 2026-09-12 — [Stage S14 v2] ~11h hang diagnosed + fixed (command timeout); 13/36 valid; resuming
+
+- **Symptom:** the fresh matrix appeared to run ~12h. **Diagnosis:** it wasn't slow — it was
+  **hung on one cell** (`cadis/msf2-vsftpd/rep_2`) for ~11h. The agent's vsFTPd-2.3.4 backdoor
+  attempt (`exec 3<>/dev/tcp/172.19.0.2/21; cat <&3 & ...`) left a backgrounded `cat` holding
+  the docker-exec output pipe open, and **`DockerRuntime.execute_command` ignored its `timeout`
+  and ran a blocking `exec_run` on the event loop** → the coroutine never returned → the whole
+  benchmark blocked. (A blocked exec makes no LLM calls, so **the ~11h spent no credits**.)
+- **Fix (infra/robustness, `pentestagent/runtime/docker_runtime.py`):** enforce a hard
+  per-command timeout — (1) wrap the command in coreutils `timeout -k 5 T … </dev/null` (kills
+  the process tree; no interactive-stdin hang); (2) run `exec_run` via `asyncio.to_thread`
+  inside `asyncio.wait_for(T+15)`, so even an orphaned-pipe exec returns a timeout result
+  instead of blocking. **Verified live:** `sleep 600` (T=5) → exit 124 in ~5.1s; normal
+  commands unaffected; runtime unit tests 26 pass.
+- **Validity:** the 13 completed cells did **not** hang → unaffected → **kept** (resume skips
+  them). Signals/conditions/metrics/model and the HCR definition are all unchanged (infra fix
+  only). Re-froze for provenance: `cadis_commit 04543ba`, checklist all pass.
+- **Cleanup:** stopped the hung task; `docker rm -f` the stuck `cadis-msf2-vsftpd` + sandbox
+  (orphan `cat` reaped). The in-flight `rep_2` (no summary) re-runs cleanly on resume.
+- **Files/components changed:** `pentestagent/runtime/docker_runtime.py`; `benchmark/freeze/*`
+  (re-frozen). Commits `04543ba` (fix) + freeze commit. `newplan.md` untouched.
+- **Current status:** **13/36 cells valid; benchmark resuming** (background) into
+  `benchmark/runs_deepseek-v4-flash/`; the backdoor command will now time out (~T+15s) rather
+  than hang.
+- **Next planned step:** on completion → S11 `analyse` (corrected HER + populated HCR), report,
+  then S15 IAS export.
+
+---
+
 ### 2026-09-11 — [Stage S14 v2] Fixes applied (HER/n=8/HCR-key) + re-freeze; fresh 36-run matrix relaunched
 
 - **User directive:** fix the recorder + HCR key, verify the Random n=8, re-freeze, re-run all
