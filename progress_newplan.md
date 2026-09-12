@@ -37,6 +37,53 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 
 ## Session log (newest first)
 
+### 2026-09-12 — [Stage S14 complete / S15 results] Matrix 36/36; corrected metrics (HER valid); HCR null
+
+- **Completed:** resumed run finished — **36/36 cells, 0 failures, no n=8 drop, docker clean.**
+  Corrected S11 analysis written to `benchmark/runs_deepseek-v4-flash/results/`.
+- **Corrected results (by condition, n=9 each; deepseek-v4-flash):**
+
+  | Condition | HER | TCR | HCR | mean TTC |
+  |---|---|---|---|---|
+  | full_autonomy | **0.00** | 0.67 | 0.0 | 12.7 s |
+  | static_hitl | **1.00** | 0.00 | 0.0 | 1.2 s |
+  | random | 0.285 | 0.67 | 0.0 | 8.6 s |
+  | cadis | 0.277 | 0.22 | 0.0 | 10.5 s |
+
+  CADIS calibration **ECE = 0.198** (173 steps). HER is now correct (full_autonomy 0,
+  static_hitl 1.0) — the recorder applied-level fix is confirmed, and **budget-matching is
+  validated**: random HER 0.285 ≈ CADIS HER 0.277.
+- **Confirmatory endpoints (pre-registered; definitions unchanged):**
+  - **H3 (primary) — CADIS vs Random on HCR: INCONCLUSIVE.** HCR = 0 in *every* condition
+    (`n_failure = 0` across all 36 runs) → no hallucination-cascade event occurred under the
+    pre-registered cascade definition → the load-bearing test cannot discriminate (0 vs 0).
+  - **H1 (CADIS vs Full-Autonomy on HCR): INCONCLUSIVE** (0 vs 0), same reason.
+  - **H2 — effort (CADIS vs Static-HITL on HER):** CADIS **0.277** vs Static-HITL **1.00**
+    (diff −0.723; Cohen's dz ≈ −4.75; Wilcoxon p = 0.25 at n=3 — direction strong, **severely
+    underpowered**). H2-safety is inconclusive (HCR all 0).
+  - **H4 — calibration:** ECE = 0.198 (reported separately; moderate).
+- **Honest reading (confirmatory):** with this model + target set, CADIS spends far less human
+  effort than Static-HITL (~28% vs 100%) while Random at the same budget behaves similarly on
+  HER; but because **no cascades occurred in any condition**, the safety hypotheses (H1/H3)
+  cannot be decided here. Oversight's *cost* is visible (TCR: static 0.0, cadis 0.22 vs
+  full/random 0.67 — gating blocks the HIGH-risk exploitation steps) with no cascade benefit to
+  offset it in this setup.
+- **Limitations (EXPLORATORY — kept separate from the confirmatory endpoints, §12):** the
+  outcome classifier marks executed commands "success" whenever they return output and blocked
+  actions `None`, so the cascade event is rarely reachable; R=3 × 3 targets is underpowered; a
+  cheap model. These bound the conclusions. **The pre-registered HCR/outcome definition was NOT
+  changed** (per user directive) — HCR=0 is reported as the honest result, not tuned away.
+- **Files/components changed:** none (source). Results under the git-ignored run dir; headline
+  numbers recorded here for the git record. `newplan.md` untouched.
+- **Current status:** **S14 executed & analysed (valid).** Primary safety endpoint inconclusive
+  (no cascade events); HER/TCR/TTC/ECE computed and correct.
+- **Next planned step:** **S15 IAS** — export the intervention decisions **blind to condition**
+  for ≥2 human raters, then compute Cohen's κ + reconcile (human step). Optionally (a separate,
+  pre-registered §17 decision if ever desired) revisit the outcome/cascade operationalisation so
+  the safety endpoint can register events — NOT done now.
+
+---
+
 ### 2026-09-12 — [Stage S14 v2] ~11h hang diagnosed + fixed (command timeout); 13/36 valid; resuming
 
 - **Symptom:** the fresh matrix appeared to run ~12h. **Diagnosis:** it wasn't slow — it was
