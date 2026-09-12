@@ -37,6 +37,55 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 
 ## Session log (newest first)
 
+### 2026-09-12 — [Stage S15] IAS blind export + Cohen's κ / reconciliation scaffolding built
+
+- **Completed:** implemented the IAS tooling and generated the blind rater package to the
+  pre-registered scope (recorded in the entry below **before** building; CadisClaude §9.2–§9.3
+  step 5 / newplan §13). IAS remains **secondary/supporting** — it qualifies, never redefines,
+  the primary endpoints (§12).
+- **New source — `benchmark/run/ias.py`** (`ias/0.1.0`, stdlib-only; reuses `analyse.iter_runs`
+  + `targets.registry.get_target`). Two subcommands:
+  - `export` — pure `select_decisions` keeps **all interventions** (`final_level ≥ 1`) and
+    samples L0 non-interventions per condition at `--l0-frac` (default 0.25, seeded `--seed`
+    20260912); `build_export` canonicalises then shuffles with an independent seeded stream and
+    assigns opaque `IAS-####` ids. Writes `export_for_review/ias_decisions_blind.csv` (rater
+    sheet), `ias_key.csv` (de-blind provenance, **not for raters**),
+    `export_for_review/ias_export_manifest.json`, and a rater `README.md`.
+  - `score` — pure `cohen_kappa` (p_o/p_e/κ, `None` on the p_e==1 degenerate case) over ≥2
+    `rater_*_completed.csv`; writes `inter_rater_agreement.md` (κ vs target **0.7**),
+    `reconciliation_worksheet.csv` for disagreements, and `ias_by_condition.csv` (de-blinded
+    per-condition IAS) once consensus is complete (unanimous rows + any `reconciled.csv`).
+    Reports `status='pending'` and writes nothing when <2 rater files exist (safe to run now).
+- **Blinding (design, verified):** the rater sheet exposes only
+  `blind_id,target,target_objective,applied_oversight,proposed_action,rating,notes` — condition,
+  seed, step ordering, and every CADIS signal (USC/FH/RC/I(t)/levels/outcome) are withheld and
+  rows are globally shuffled. `applied_oversight` uses neutral labels
+  (`autonomous`/`notified`/`gated_approved`/`gated_rejected`/`gated`/`delegated`); checked that no
+  single label maps 1:1 to a condition, so no row is traceable to its condition. `outcome_class`
+  is deliberately withheld so raters judge the decision **ex ante** (no hindsight bias).
+- **Generated package — `benchmark/results_deepseek-v4-flash/ias_review/`** (committed, since the
+  run dir is git-ignored): **367 decisions = 275 interventions (cadis 48 / random 33 /
+  static_hitl 194 / full_autonomy 0) + 92 stratified L0** (full 35 / cadis 32 / random 25 of pools
+  137/125/98; static_hitl has no L0). Determinism verified: two exports at the same seed produce
+  **byte-identical** blind sheet + key (sha256), incl. against the final post-lint source.
+- **Validation:** new `tests/unit/benchmark/test_ias.py` — 16 tests (κ hand-computed cases +
+  degenerate/mismatch, oversight-label mapping, L0 sampling counts, export determinism &
+  seed-sensitivity, blind-sheet leak check, end-to-end export→score with agreement + disagreement
+  + reconciliation). Full suite **666 passed** (was 650). ruff + black clean. A throwaway
+  scratchpad smoke test drove `score` over all 367 rows with two synthetic rater sheets (κ path,
+  64-disagreement reconciliation worksheet, partial per-condition IAS from the 303 unanimous rows)
+  — artifacts rendered correctly; scratch discarded (synthetic ratings are **not** committed).
+- **Files/components changed:** new `benchmark/run/ias.py`, `tests/unit/benchmark/test_ias.py`,
+  `benchmark/results_deepseek-v4-flash/ias_review/**` (4 files). No existing source changed;
+  `newplan.md` untouched. No billable run.
+- **Current status:** **S15 export stage complete.** The blind rater package is ready to hand to
+  ≥2 human raters; κ + reconciliation + per-condition IAS compute automatically once
+  `rater_*_completed.csv` are filled.
+- **Next planned step:** hand `export_for_review/ias_decisions_blind.csv` to ≥2 blind raters →
+  collect `rater_*_completed.csv` → `python -m benchmark.run.ias score --ias-dir …` → reconcile →
+  record κ + per-condition IAS here. (Human-gated; no further code needed.) Primary safety
+  endpoint H3/H1 remains inconclusive (no cascade events) independent of IAS.
+
 ### 2026-09-12 — [Stage S15] Durable committed results snapshot + pre-registered IAS scope
 
 - **Completed:** created a **durable, committed results snapshot** at
