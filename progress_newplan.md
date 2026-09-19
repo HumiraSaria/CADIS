@@ -33,11 +33,41 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 | D2 | 2026-09-10 | L2/L3 blocking interventions are resolved by a **deterministic, pre-registered scripted operator policy** instead of live human operators, so the 4×3×R matrix is reproducible/tractable. Humans still perform the **blind IAS rating** (§13) on the logged CADIS routing decisions. HER is measured count-based (fraction of actions at level ≥1), unaffected by the operator model. | CadisClaude.md §9.2–§9.3 (step 5), §5.3; newplan.md §7, §13 | Conditions C2 (static_hitl) & C4 (cadis); S8, S14; HER; IAS | **Finalised & pre-registered at S13**: `BenchmarkOperator` — L2 reject iff invalid/unsafe/inappropriate, L3 handoff, CRITICAL→L3 |
 | D3 | 2026-09-11 | RC fail-safe (HIGH-on-unmatched) mis-classifies the agent's own framework/meta tool calls (`finish`, `notes`, `browser`, `web_search`) as HIGH, so gated conditions reject them — including `finish`, which structurally biases TCR to 0 under CADIS/Static-HITL. Proposed correction: classify framework meta-tools as LOW; keep fail-safe HIGH only for unrecognised **shell** commands (RC taxonomy v0.1.0 → v0.1.1, re-freeze). | CadisClaude.md §6.3 (RC classifies the offensive command; fail-safe for unmatched *commands*); newplan.md §17 | RC signal; all gated conditions; TCR; freeze artifacts | **APPLIED (user-approved) 2026-09-11** — tool-aware RC (`RiskClassifier.classify_for_tool`), `FRAMEWORK_TOOLS`→LOW, fail-safe HIGH only for `terminal` shell; taxonomy v0.1.1; **re-frozen** (config_hash `d557abd…`). No counted runs preceded the fix. |
 | D4 | 2026-09-19 | Outcome classifier logs every executed terminal command `success` (real exit_code/stderr unused), so the pre-registered hallucination-cascade is structurally unreachable (HCR=0 by construction; 0 `failure` in 635 steps). Correct the instrument to detect invalid-command/nonexistent-target `failure` from `CommandResult`; cascade rule unchanged. Neutral, all-conditions, report regardless of sign. Isolated (new `results_deepseek-v4-flash_v2/`); originals preserved. | CadisClaude.md §6.2, Q1/Q2, F8; newplan.md §17 | outcome_class; FH→routing; HCR; H1/H3; **new isolated run only** (original run untouched) | **CODE IMPLEMENTED (2026-09-19)** — rule confirmed by user (`classification_rule.xlsx`), adopted verbatim as `classify_terminal_outcome` v0.2.0 (unit-tested; suite 675). **Still pending: v2 freeze + billable pilot/run** (paired with D5 targets). |
-| D5 | 2026-09-19 | Regime too easy for the model → cascades never occur AND n=3 targets underpowers the paired test. Expand/harden the digest-pinned target set (→ ~6–8) and raise per-run max-iterations so the hallucination-cascade phenomenon can occur and H3 is adequately powered. Model **unchanged** (same pinned `deepseek-v4-flash`); N=3 unchanged. Pilot-gated before the full matrix. | CadisClaude.md §9.3 (target set), §9.2 (power); newplan.md §8, §17 | targets; HCR/H3 power; **new isolated v2 run only** | **PROPOSED (2026-09-19)** — pending concrete target list + digest-pinning + billable approval. No new run yet. |
+| D5 | 2026-09-19 | Regime too easy for the model → cascades never occur AND n=3 targets underpowers the paired test. Expand/harden the digest-pinned target set (→ ~6–8) and raise per-run max-iterations so the hallucination-cascade phenomenon can occur and H3 is adequately powered. Model **unchanged** (same pinned `deepseek-v4-flash`); N=3 unchanged. Pilot-gated before the full matrix. | CadisClaude.md §9.3 (target set), §9.2 (power); newplan.md §8, §17 | targets; HCR/H3 power; **new isolated v2 run only** | **NOT PURSUED (2026-09-19)** — pilot (full_autonomy, corrected classifier) showed cascades unreachable (1 failure / 6 runs, 0 cascades); blocker is model behaviour, not target count → full matrix not run. WebGoat kept as a validated target. |
+| D6 | 2026-09-19 | Add a **second pinned model** (`openrouter/google/gemini-2.5-flash`) as a separate, independently-frozen benchmark for **cross-model external validity** (thesis needs >1 model, shown side-by-side). Only the model differs vs deepseek; same protocol/targets(3 core)/conditions/config. Requested `gemini-3.8-flash:batch` rejected (Batch-API-only, incompatible with the interactive loop). Runs under corrected classifier v0.2.0 → HER/TCR/TTC directly comparable to deepseek v1; HCR/ECE carry an instrument note. | CadisClaude.md §9 (external validity); newplan.md §6 (single pinned model — per-benchmark), §17 | model; **new isolated `*_gemini-2.5-flash` run only** (deepseek untouched) | **SETUP (2026-09-19)** — freeze + plan written; billable full matrix pending explicit run approval. |
 
 ---
 
 ## Session log (newest first)
+
+### 2026-09-19 — [Deviation D6 — second model] gemini-2.5-flash cross-model benchmark (isolated) — setup
+
+- **User directive:** add a **second benchmark model** for the thesis so results can be shown
+  side-by-side; **isolate** so the deepseek results are untouched.
+- **Model resolution (recorded):** the requested `google/gemini-3.8-flash:batch` is **unusable** —
+  OpenRouter serves it only via the async Batch API (`/api/v1/batches`), which cannot drive the
+  interactive, sequential agent loop (each step consumes the prior step's real result; N=5 sampler
+  needs live responses). Non-batch `gemini-3.8-flash` works but is a **reasoning model** (burns
+  tokens on hidden reasoning; costlier/slower; tool-calling to validate). **User chose
+  `openrouter/google/gemini-2.5-flash`** (clean, non-reasoning, smoke-tested OK: reply 'ok', 1.1s).
+- **Design (cross-model external validity):** a **separate, independently-frozen** single-model
+  benchmark; the model is the **only** variable vs deepseek. Matched to deepseek v1 for parity —
+  **3 core targets** (dvwa-sqli/msf2-vsftpd/juice-shop), the **4** conditions, **R=3**, **N=5**,
+  weights `0.35/0.30/0.35`, thresholds `0.25/0.50/0.75`, `max_iterations=20`, CADIS-first.
+- **Instrument-parity caveat (honest):** gemini runs under the **corrected outcome classifier
+  v0.2.0** (current code, post-D4); deepseek **v1** used the pre-D4 v0.1 (HCR structurally 0). So the
+  side-by-side compares directly on the **classifier-independent** metrics (HER, TCR, TTC; IAS is
+  deepseek-only unless separately human-rated), while **HCR/ECE carry an instrument note** (both HCR
+  expected ~0). Perfect all-metric parity would require also re-running deepseek under v0.2.0 (a 2nd
+  billable matrix) — **not** done unless the user asks.
+- **Isolation:** run dir `benchmark/runs_gemini-2.5-flash/` (git-ignored); committed results
+  `benchmark/results_gemini-2.5-flash/`; committed freeze `benchmark/freeze_gemini-2.5-flash/`.
+  Deepseek `runs_/results_/freeze` untouched.
+- **Status:** **PROPOSED / setup in progress (non-billable).** Freeze + plan written; **billable full
+  36-cell matrix NOT started — pending explicit run approval.** `newplan.md` untouched.
+- **Next planned step:** freeze gemini + `--list` the plan (done in this step) → user approves the
+  billable run → execute (background + stall-watchdog) → analyse into `results_gemini-2.5-flash/` →
+  build the deepseek-vs-gemini side-by-side comparison for the thesis.
 
 ### 2026-09-19 — [Stage S16 / D4-D5 pilot] Corrected classifier validated; cascades still unreachable → do NOT run full v2 matrix
 
