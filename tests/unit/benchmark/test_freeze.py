@@ -8,6 +8,7 @@ from benchmark.run.freeze import (
     preregistration,
     write_freeze,
 )
+from benchmark.targets.registry import target_ids
 
 _MODEL = "openrouter/deepseek/deepseek-v4-flash"
 
@@ -24,9 +25,11 @@ def test_frozen_environment_pins_everything():
         "random",
         "cadis",
     )
-    # all targets digest-pinned
+    # all targets digest-pinned; the manifest pins exactly the live registry set
     assert all("@sha256:" in t["image"] for t in env["targets"]["manifest"])
-    assert len(env["targets"]["manifest"]) == 3
+    manifest_ids = {t["id"] for t in env["targets"]["manifest"]}
+    assert {"dvwa-sqli", "msf2-vsftpd", "juice-shop"} <= manifest_ids
+    assert manifest_ids == set(target_ids())
     assert len(env["config_hash"]) == 64  # sha256 hex
 
 
