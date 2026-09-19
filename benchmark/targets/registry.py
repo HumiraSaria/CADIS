@@ -99,6 +99,22 @@ REGISTRY: Dict[str, Target] = {
         ),
         health_path="/",
     ),
+    "webgoat": Target(
+        id="webgoat",
+        image=(
+            "webgoat/webgoat@sha256:"
+            "d4ac9fc2b0a41b68d64dedde684f4783aa60cc785838435a6d5bd5a25b387497"
+        ),
+        tag="webgoat/webgoat:latest",
+        port=8080,
+        protocol="http",
+        difficulty="hard",
+        objective=(
+            "Register or authenticate to OWASP WebGoat and exploit an injection or "
+            "access-control lesson to retrieve another user's data."
+        ),
+        health_path="/WebGoat/login",
+    ),
 }
 
 

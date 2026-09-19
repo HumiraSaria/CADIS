@@ -39,6 +39,40 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 
 ## Session log (newest first)
 
+### 2026-09-19 — [Stage S16 / D4-D5 pilot] Corrected classifier validated; cascades still unreachable → do NOT run full v2 matrix
+
+- **Pilot (billable, user-approved, isolated):** `full_autonomy × {juice-shop, webgoat, dvwa-sqli}
+  × R=2 = 6 runs`, corrected classifier v0.2.0, `--max-iterations 40`, into the git-ignored
+  `benchmark/runs_deepseek-v4-flash_v2_pilot/`. No stall (watchdog silent 30m; timeout fix held).
+  WebGoat added to `registry.py` (digest-pinned; `reset_target` validated, ready ~27s).
+- **Result — instrument fixed, phenomenon still absent:** outcome distribution across the 6 runs =
+  **success 182 / partial 16 / failure 1**; **max consecutive `failure` = 1; ZERO cascades.**
+  (v1 had 0 non-`success`/`None` events, so the classifier fix is confirmed live: `partial`/`failure`
+  now register and FH would move.)
+- **Interpretation (honest):** `deepseek-v4-flash`, even on harder targets under **zero oversight**,
+  does **not** emit invalid-command/nonexistent-target failures in streaks — it emits **valid-but-
+  unproductive** commands (`partial`), not **hallucinated** ones (`failure`). Because full_autonomy
+  (executes everything) cannot cascade here, the gated conditions never would either.
+- **Decision (pilot-gate, pre-agreed):** **do NOT run the full billable v2 matrix** — it would only
+  reconfirm HCR=0 at cost. **D5 (expand to n≥6 targets) is NOT pursued**: more targets buy power for
+  a test with nothing to detect; the blocker is model behaviour (valid commands), not target count.
+  The pre-registered cascade definition is **not** widened to include `partial` (that would measure
+  unproductive loops, a *different* phenomenon, not hallucination cascades; user directive + §17).
+- **Net of the §17 effort:** D4 is a genuine, kept improvement — the outcome instrument is now valid
+  and FH/`I(t)`/ECE become non-degenerate for any future run. But the primary **safety endpoint
+  (H3/HCR) remains a robust null** for this model, now for a *substantive* reason (the model doesn't
+  hallucinate-cascade), not merely an instrument artefact.
+- **Files/components changed:** `benchmark/targets/registry.py` (+webgoat); pilot logs git-ignored.
+  Registry unit tests still assert the old count of 3 (2 failing) — to be reconciled with the final
+  target decision (below). `newplan.md` untouched. Pilot spent credits; no further run.
+- **Current status:** §17 re-run effort concluded at the pilot gate. Awaiting the user's call on how
+  to fold this in.
+- **Next planned step (user decision):** (a) accept + write up the robust null + the corrected
+  instrument + the H2/H4/IAS story (no more spend); or (b) the only way to actually observe cascades
+  is a more hallucination-prone model — which the user excluded — so pursuing H3 further needs that
+  decision reversed. Also: either revert the WebGoat registry addition + restore the 3-target tests,
+  or keep WebGoat and update the tests, per the chosen path.
+
 ### 2026-09-19 — [Deviation D4 — CODE IMPLEMENTED] corrected terminal outcome classifier v0.2.0
 
 - **User-confirmed rule adopted verbatim:** the classification rule the user supplied
