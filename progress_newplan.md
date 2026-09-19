@@ -32,11 +32,41 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 | D1 | 2026-09-10 | OpenRouter-only LLM access replaces the local vLLM/Ollama backbone; the *same* pinned `openrouter/*` model is both the agent and the `N=5` self-consistency sampler. No local inference / no fallback. | CadisClaude.md G7, A3 (§3, §4, §10); **sanctioned by** newplan.md §6 | All LLM calls; freeze artifacts; S5 onward | Logged (pre-implementation) |
 | D2 | 2026-09-10 | L2/L3 blocking interventions are resolved by a **deterministic, pre-registered scripted operator policy** instead of live human operators, so the 4×3×R matrix is reproducible/tractable. Humans still perform the **blind IAS rating** (§13) on the logged CADIS routing decisions. HER is measured count-based (fraction of actions at level ≥1), unaffected by the operator model. | CadisClaude.md §9.2–§9.3 (step 5), §5.3; newplan.md §7, §13 | Conditions C2 (static_hitl) & C4 (cadis); S8, S14; HER; IAS | **Finalised & pre-registered at S13**: `BenchmarkOperator` — L2 reject iff invalid/unsafe/inappropriate, L3 handoff, CRITICAL→L3 |
 | D3 | 2026-09-11 | RC fail-safe (HIGH-on-unmatched) mis-classifies the agent's own framework/meta tool calls (`finish`, `notes`, `browser`, `web_search`) as HIGH, so gated conditions reject them — including `finish`, which structurally biases TCR to 0 under CADIS/Static-HITL. Proposed correction: classify framework meta-tools as LOW; keep fail-safe HIGH only for unrecognised **shell** commands (RC taxonomy v0.1.0 → v0.1.1, re-freeze). | CadisClaude.md §6.3 (RC classifies the offensive command; fail-safe for unmatched *commands*); newplan.md §17 | RC signal; all gated conditions; TCR; freeze artifacts | **APPLIED (user-approved) 2026-09-11** — tool-aware RC (`RiskClassifier.classify_for_tool`), `FRAMEWORK_TOOLS`→LOW, fail-safe HIGH only for `terminal` shell; taxonomy v0.1.1; **re-frozen** (config_hash `d557abd…`). No counted runs preceded the fix. |
-| D4 | 2026-09-19 | Outcome classifier logs every executed terminal command `success` (real exit_code/stderr unused), so the pre-registered hallucination-cascade is structurally unreachable (HCR=0 by construction; 0 `failure` in 635 steps). Correct the instrument to detect invalid-command/nonexistent-target `failure` from `CommandResult`; cascade rule unchanged. Neutral, all-conditions, report regardless of sign. Isolated (new `results_deepseek-v4-flash_v2/`); originals preserved. | CadisClaude.md §6.2, Q1/Q2, F8; newplan.md §17 | outcome_class; FH→routing; HCR; H1/H3; **new isolated run only** (original run untouched) | **PROPOSED (2026-09-19)** — pending (1) user confirmation of the classification rule + (2) billable-re-run approval. No code/freeze/run yet. |
+| D4 | 2026-09-19 | Outcome classifier logs every executed terminal command `success` (real exit_code/stderr unused), so the pre-registered hallucination-cascade is structurally unreachable (HCR=0 by construction; 0 `failure` in 635 steps). Correct the instrument to detect invalid-command/nonexistent-target `failure` from `CommandResult`; cascade rule unchanged. Neutral, all-conditions, report regardless of sign. Isolated (new `results_deepseek-v4-flash_v2/`); originals preserved. | CadisClaude.md §6.2, Q1/Q2, F8; newplan.md §17 | outcome_class; FH→routing; HCR; H1/H3; **new isolated run only** (original run untouched) | **CODE IMPLEMENTED (2026-09-19)** — rule confirmed by user (`classification_rule.xlsx`), adopted verbatim as `classify_terminal_outcome` v0.2.0 (unit-tested; suite 675). **Still pending: v2 freeze + billable pilot/run** (paired with D5 targets). |
+| D5 | 2026-09-19 | Regime too easy for the model → cascades never occur AND n=3 targets underpowers the paired test. Expand/harden the digest-pinned target set (→ ~6–8) and raise per-run max-iterations so the hallucination-cascade phenomenon can occur and H3 is adequately powered. Model **unchanged** (same pinned `deepseek-v4-flash`); N=3 unchanged. Pilot-gated before the full matrix. | CadisClaude.md §9.3 (target set), §9.2 (power); newplan.md §8, §17 | targets; HCR/H3 power; **new isolated v2 run only** | **PROPOSED (2026-09-19)** — pending concrete target list + digest-pinning + billable approval. No new run yet. |
 
 ---
 
 ## Session log (newest first)
+
+### 2026-09-19 — [Deviation D4 — CODE IMPLEMENTED] corrected terminal outcome classifier v0.2.0
+
+- **User-confirmed rule adopted verbatim:** the classification rule the user supplied
+  (`classification_rule.xlsx`, archived at `benchmark/results_deepseek-v4-flash_v2/`) — a
+  priority-ordered map to timeout/failure/partial/success — is implemented as
+  `classify_terminal_outcome(exit_code, stdout, stderr)` in `signals/failure_history.py`
+  (`OUTCOME_CLASSIFIER_VERSION = "0.2.0"`). `FAILURE` (the cascade class) requires `exit_code != 0`
+  and a clear invalid-command/syntax or nonexistent-path/target signature; environmental errors
+  (connection-refused/auth) → `PARTIAL` (excluded from the cascade); a successful scan whose output
+  merely mentions "connection refused" stays `SUCCESS`. Conservative on ambiguity (unrecognised
+  non-zero → `PARTIAL`), so the corrected run can still legitimately return HCR=0.
+- **Wiring:** `gate._classify` now parses `exit_code`/stdout/stderr from the terminal tool's
+  formatted output (`Exit Code:` + `--- stdout/stderr ---`) and calls the new classifier for
+  `tool_name == "terminal"`; **falls back to the existing `classify_outcome`** for non-terminal
+  tools or unparseable output (existing behaviour/tests preserved).
+- **Files/components changed:** `pentestagent/cadis/signals/failure_history.py` (+classifier),
+  `pentestagent/cadis/gate.py` (+parse/branch), `tests/unit/cadis/test_failure_history.py` (+7),
+  `tests/unit/cadis/test_gate.py` (+2); archived `classification_rule.xlsx`. **Suite 675 passed;
+  ruff + black clean.** No freeze, no run. `newplan.md` untouched.
+- **Note on scope:** the code moves forward on the shared branch (like D3), but the *results* stay
+  isolated — v1 (`results_deepseek-v4-flash/`, config_hash `ffb01ad7…`, cadis_commit 04543ba) is
+  frozen and untouched; the corrected classifier only affects the forthcoming **v2** run under a new
+  freeze/commit.
+- **Current status:** D4 classifier done + tested. **Next:** finalise D5 (expanded/harder target
+  set + max-iter), re-freeze into the isolated `…_v2/` path, then the **pilot-gate** (billable —
+  full_autonomy on the hard targets to check cascades now register) before any full matrix.
+- **Next planned step:** propose the concrete expanded target list (non-billable) for approval →
+  digest-pin → v2 freeze → pilot.
 
 ### 2026-09-19 — [Deviation D4 — PROPOSED, §17] Corrected outcome classifier + isolated re-run to make H3 decidable
 

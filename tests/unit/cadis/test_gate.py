@@ -189,3 +189,43 @@ async def test_gate_uses_sampler_for_usc():
     rec = gate.records[0]
     assert rec.score.n_samples == 3
     assert rec.score.usc == pytest.approx(0.0)
+
+
+# --- D4: terminal outcome parsing in _classify --------------------------------
+
+
+def _terminal_result(exit_code, stdout="", stderr=""):
+    parts = ["Command: x", f"Exit Code: {exit_code}"]
+    if stdout:
+        parts.append(f"\n--- stdout ---\n{stdout}")
+    if stderr:
+        parts.append(f"\n--- stderr ---\n{stderr}")
+    return ToolResult(
+        tool_call_id="c1", tool_name="terminal", result="\n".join(parts), success=True
+    )
+
+
+def test_classify_parses_terminal_failure_and_success():
+    assert (
+        CadisGate._classify(
+            _terminal_result(127, stderr="sh: nmapp: command not found")
+        )
+        == "failure"
+    )
+    assert (
+        CadisGate._classify(_terminal_result(0, stdout="22/tcp open ssh")) == "success"
+    )
+    assert (
+        CadisGate._classify(_terminal_result(7, stderr="curl: (7) Connection refused"))
+        == "partial"
+    )
+
+
+def test_classify_falls_back_when_no_exit_line():
+    # non-terminal, or terminal without a parseable "Exit Code:" line -> generic path
+    r = ToolResult(
+        tool_call_id="c1", tool_name="terminal", result="ran ok", success=True
+    )
+    assert CadisGate._classify(r) == "success"
+    r2 = ToolResult(tool_call_id="c2", tool_name="notes", result="saved", success=True)
+    assert CadisGate._classify(r2) == "success"

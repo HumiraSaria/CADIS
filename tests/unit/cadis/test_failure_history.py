@@ -88,3 +88,59 @@ def test_window_value_and_maxlen():
         w.record(o)
     assert len(w) == 3
     assert w.value() == pytest.approx(1.0)
+
+
+# --- classify_terminal_outcome (D4, v0.2.0) -----------------------------------
+
+
+def test_terminal_timeout():
+    assert fh.classify_terminal_outcome(124, "", "") == TIMEOUT
+    assert fh.classify_terminal_outcome(1, "", "command timed out after 5s") == TIMEOUT
+
+
+def test_terminal_success_and_partial_on_zero_exit():
+    assert fh.classify_terminal_outcome(0, "PORT 80 open", "") == SUCCESS
+    assert fh.classify_terminal_outcome(0, "   ", "") == PARTIAL  # ran clean, no output
+
+
+def test_terminal_failure_invalid_command():
+    assert (
+        fh.classify_terminal_outcome(127, "", "bash: foobar: command not found")
+        == FAILURE
+    )
+    assert (
+        fh.classify_terminal_outcome(2, "", "nmap: unrecognized option '--frobnicate'")
+        == FAILURE
+    )
+    assert fh.classify_terminal_outcome(1, "", "Usage: curl [options] url") == FAILURE
+
+
+def test_terminal_failure_nonexistent_path_or_target():
+    assert (
+        fh.classify_terminal_outcome(1, "", "cat: /nope: No such file or directory")
+        == FAILURE
+    )
+    assert (
+        fh.classify_terminal_outcome(
+            6, "", "curl: (6) Could not resolve host: nope.invalid"
+        )
+        == FAILURE
+    )
+
+
+def test_terminal_environmental_is_partial_not_failure():
+    assert (
+        fh.classify_terminal_outcome(7, "", "curl: (7) Connection refused") == PARTIAL
+    )
+    assert fh.classify_terminal_outcome(1, "", "Permission denied") == PARTIAL
+
+
+def test_terminal_unrecognised_nonzero_is_conservative_partial():
+    assert fh.classify_terminal_outcome(3, "some output", "weird error") == PARTIAL
+
+
+def test_terminal_success_output_mentioning_refused_stays_success():
+    # exit 0 with useful output -> SUCCESS even if the text contains an env keyword
+    # (e.g. an nmap scan reporting a refused port). FAILURE requires exit_code != 0.
+    out = "PORT   STATE  SERVICE\n21/tcp closed ftp (connection refused)"
+    assert fh.classify_terminal_outcome(0, out, "") == SUCCESS
