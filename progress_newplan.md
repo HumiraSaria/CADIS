@@ -37,6 +37,34 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 
 ## Session log (newest first)
 
+### 2026-09-19 — [Stage S15] IAS ratings ingested + Cohen's κ computed (κ=0.367 < 0.7); awaiting reconciliation
+
+- **Completed (close-out steps 1–2):**
+  - **Step 1 — ingest & validate:** the two filled rater workbooks (delivered as
+    `rater_{1,2}.completed.xlsx`) were converted to the canonical
+    `ias_review/rater_{1,2}_completed.csv` (openpyxl, tooling-only). Both **367/367 rated,
+    0 blanks, 0 out-of-vocabulary values, all `blind_id`s join to `ias_key.csv`.** Rating
+    distributions — R1: appropriate 183 / unnecessary 145 / should_have 39; R2: appropriate 142 /
+    unnecessary 150 / should_have 75.
+  - **Step 2 — Cohen's κ:** `ias score` → **κ = 0.3667** (p_o 0.6049, p_e 0.3761, n=367).
+    **Below the pre-registered target κ ≥ 0.7** (newplan §13 / CadisClaude §9.3 step 5) — reported
+    honestly as a reliability limitation, **not** tuned. **145 disagreements**; consensus incomplete.
+    Disagreement pattern: appropriate↔unnecessary 77, appropriate↔should_have_intervened 62,
+    unnecessary↔should_have 6.
+- **Provisional per-condition IAS (unanimous 222 rows only — NOT final, low κ):** appropriate_frac
+  cadis 0.64 / full_autonomy 0.62 / random 0.61 / static_hitl 0.21 (static gates every action →
+  raters marked many benign gates `unnecessary`: 87/112). Recorded as provisional/exploratory only.
+- **Blocked at step 3 (by design):** reconciliation of the 145 disagreements requires a **human
+  adjudicator** (fills `reconciled_rating` → `reconciled.csv`). Not fabricated.
+- **Files/components changed:** new `ias_review/rater_{1,2}_completed.csv` (human data),
+  generated `ias_review/inter_rater_agreement.md` + `ias_review/reconciliation_worksheet.csv`.
+  No source changed; `newplan.md` untouched. No billable run.
+- **Current status:** close-out steps 1–2 done; **κ below target documented**; awaiting human
+  reconciliation before final per-condition IAS.
+- **Next planned step:** adjudicator fills `reconciled.csv` → `ias score --reconciled` → final
+  per-condition IAS → update FINAL_REPORT §8/§10 + tick §18 artifact → declare complete-to-plan.
+  (Given κ<0.7, the final IAS will carry an explicit low-reliability caveat.)
+
 ### 2026-09-12 — [Stage S15] IAS rater hand-off prepared (step 1); blocked at the human rating step
 
 - **Completed (step 1 of the IAS close-out):** prepared the human-rater hand-off package —
