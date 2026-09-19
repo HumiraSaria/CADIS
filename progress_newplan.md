@@ -40,6 +40,37 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 
 ## Session log (newest first)
 
+### 2026-09-20 — [Deviation D6 — DONE] gemini-2.5-flash 36/36 executed + analysed + cross-model comparison
+
+- **Completed:** the isolated gemini-2.5-flash matrix ran **36/36, 0 failures, no empty runs** (all
+  4 conditions 9/9), corrected classifier v0.2.0. No true hang — the watchdog fired only on a slow
+  msf2 cell (Gemini flailing on the vsftpd backdoor with timeout-capped `nc`, bounded by
+  max_iterations=20; the DockerRuntime cap returned `timeout` on the exact S14 scenario). Durable
+  snapshot committed to `benchmark/results_gemini-2.5-flash/` + `RESULTS.md`; cross-model doc at
+  `benchmark/CROSS_MODEL_COMPARISON.md`.
+- **Gemini results (n=9/condition):** HCR 0 everywhere; HER full 0 / static 1.0 / random 0.353 /
+  cadis 0.356 (budget-matching holds); TCR full 0.111 / static 0 / random 0.111 / cadis 0 (only 2
+  completions in 36, both juice-shop); TTC full **~19 min** (msf2 flailing) vs **cadis 35.6 s**
+  (gating blocks the fruitless backdoor). Outcomes now diverse (success 348 / partial 57 / timeout
+  55 / failure 16) but **0 cascades** (no ≥3-failure streak). ECE 0.170 (112 CADIS steps) — meaningful.
+- **Cross-model findings (deepseek vs gemini):** (1) **HCR = 0 for BOTH models, all conditions →
+  robust cross-model null on the primary safety endpoint** (gemini shows it's not an instrument
+  artefact: real failures registered, none cascaded). (2) Oversight-cost structure + budget-matching
+  replicate across models. (3) Capability gap: deepseek TCR 0.67 vs gemini 0.11. (4) **Headline:**
+  CADIS's benefit scales with agent unreliability — it cut gemini's full-autonomy wall-clock from
+  ~19 min to ~36 s by gating useless-risky actions (no such gap on the non-flailing deepseek).
+- **Instrument caveat (honest, recorded in the docs):** deepseek v1 used classifier v0.1
+  (degenerate outcomes; ECE not meaningful); gemini used v0.2.0. HER/TCR/TTC directly comparable;
+  HCR both 0; ECE not cross-comparable. Full parity would need re-running deepseek under v0.2.0
+  (another billable matrix) — not done.
+- **Files/components changed:** new `benchmark/results_gemini-2.5-flash/**`,
+  `benchmark/CROSS_MODEL_COMPARISON.md`. Raw runs git-ignored. No source changed; `newplan.md`
+  untouched. Billable run (36 cells) complete; no further run without approval.
+- **Current status:** two-model benchmark complete + compared; thesis has its side-by-side material.
+- **Next planned step (user): thesis write-up** — turn RESULTS + comparison into thesis sections;
+  optional further work (3rd model / more targets / re-run deepseek under v0.2.0 for full parity /
+  gemini IAS) all billable/human and unstarted.
+
 ### 2026-09-19 — [Deviation D6 — second model] gemini-2.5-flash cross-model benchmark (isolated) — setup
 
 - **User directive:** add a **second benchmark model** for the thesis so results can be shown
