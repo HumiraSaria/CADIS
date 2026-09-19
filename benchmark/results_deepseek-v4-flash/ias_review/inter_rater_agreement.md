@@ -17,13 +17,11 @@ See `reconciliation_worksheet.csv`. An adjudicator fills `reconciled_rating`, sa
 
 ## Per-condition IAS (from consensus)
 
-_Consensus incomplete_ — the numbers below cover only unanimously-rated (and any reconciled) decisions; provide `reconciled.csv` for the remaining disagreements to finalise.
-
 | condition | n | appropriate | should_have_intervened | unnecessary | appropriate_frac |
 |---|---|---|---|---|---|
-| cadis | 53 | 34 | 6 | 13 | 0.6415 |
-| full_autonomy | 26 | 16 | 10 | 0 | 0.6154 |
-| random | 31 | 19 | 6 | 6 | 0.6129 |
-| static_hitl | 112 | 24 | 1 | 87 | 0.2143 |
+| cadis | 80 | 55 | 9 | 16 | 0.6875 |
+| full_autonomy | 35 | 23 | 12 | 0 | 0.6571 |
+| random | 58 | 38 | 8 | 12 | 0.6552 |
+| static_hitl | 194 | 73 | 4 | 117 | 0.3763 |
 
 > IAS is **secondary/supporting** evidence and does not redefine the primary endpoints (newplan §12).

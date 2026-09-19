@@ -37,6 +37,36 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 
 ## Session log (newest first)
 
+### 2026-09-19 — [Stage S15] IAS reconciled + per-condition IAS computed — S15 complete-to-plan
+
+- **Completed (close-out steps 3–9):**
+  - **Step 3 — reconciliation (human):** the 145 disagreements were adjudicated by a human
+    adjudicator via `reconciliation_worksheet.xlsx` → `ias_review/reconciled.csv` (144 filled in the
+    sheet; the one remaining row `IAS-0303` was set to `appropriate` on the adjudicator's explicit
+    instruction). All 145 resolved, in-vocabulary; consensus now complete (367/367).
+  - **Step 4 — per-condition IAS:** `ias score --reconciled` → `ias_review/ias_by_condition.csv`.
+- **Result — Cohen's κ = 0.3667 (p_o 0.6049), BELOW the pre-registered 0.70 target** → reported
+  as a low-reliability caveat, not tuned. Per-condition **appropriateness fraction** (from the
+  reconciled consensus): **cadis 0.688** (55/80; 9 missed, 16 unnecessary) · full_autonomy 0.657
+  (23/35; 12 missed, 0 unnecessary) · random 0.655 (38/58; 8 missed, 12 unnecessary) · static_hitl
+  0.376 (73/194; 4 missed, **117 unnecessary** — the cost of gating every action).
+- **Honest reading (secondary/supporting only, §12/§13):** CADIS scores highest on appropriateness,
+  chiefly by avoiding Static-HITL's mass of unnecessary interventions while missing fewer than Full
+  Autonomy; its edge over budget-matched Random is **slim** (0.688 vs 0.655). With κ < 0.70 and IAS
+  being secondary, this is **weak directional support** — it does **not** establish that CADIS makes
+  the framework safer and does **not** change the inconclusive primary endpoint (H3/HCR=0).
+- **Files/components changed:** new `ias_review/reconciled.csv`, `ias_review/ias_by_condition.csv`,
+  regenerated `ias_review/inter_rater_agreement.md` (consensus complete); updated
+  `FINAL_REPORT.md` §8 (results + κ caveat), header status, §18 artifact row (IAS → ✅); updated
+  `RESULTS.md` IAS section. Also committed the reconciliation `.xlsx` aid. No source changed;
+  `newplan.md` untouched. No billable run.
+- **Current status:** **S15 complete-to-plan.** All §18 artifacts present (incl. IAS ratings + κ +
+  reconciliation notes); §19 checklist 11/11. Primary endpoint (H3) remains **honestly inconclusive**
+  (no cascade events); IAS reported as caveated supporting evidence.
+- **Next planned step:** none required to complete the protocol. Optional/off-path only (a §17
+  pre-registered cascade-redefinition + billable re-run to make H3 decidable; external-validity runs;
+  further exploratory analysis) — none undertaken.
+
 ### 2026-09-19 — [Stage S15] IAS ratings ingested + Cohen's κ computed (κ=0.367 < 0.7); awaiting reconciliation
 
 - **Completed (close-out steps 1–2):**

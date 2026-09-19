@@ -15,7 +15,7 @@
 | Matrix | 4 conditions × 3 targets × R=3 = **36/36 cells, 0 failures** |
 | Repo state | branch `cadis-execution` (local only, 24 commits ahead of `main`) |
 | Report date | 2026-09-12 |
-| Overall status | **Code-complete.** Primary safety endpoint **inconclusive** (no cascade events); effort/cost endpoints computed; IAS export ready, human ratings pending. |
+| Overall status | **Complete-to-plan.** Primary safety endpoint **inconclusive** (no cascade events); effort/cost endpoints computed; IAS collected (2 human raters + reconciliation, κ=0.367 below the 0.70 target → low-reliability caveat). |
 
 ---
 
@@ -146,16 +146,37 @@ done here.
 
 ---
 
-## 8. Secondary metric — IAS (status)
+## 8. Secondary metric — IAS (results)
 
-The Intervention Appropriateness Score is a **supporting** metric (§12). The blind-to-condition
-export and the Cohen's κ + reconciliation tooling are **built and committed**
-([`../../benchmark/run/ias.py`](../../benchmark/run/ias.py)); the review package is generated at
-[`ias_review/`](ias_review/): **367 decisions** (275 interventions + 92 condition-stratified L0),
-blind and shuffled. **IAS values are pending human ratings** — hand
-`ias_review/export_for_review/ias_decisions_blind.csv` to ≥ 2 blind raters, then
-`python -m benchmark.run.ias score --ias-dir …/ias_review` computes κ (target ≥ 0.7) and
-per-condition IAS automatically. This does not affect the primary endpoint.
+The Intervention Appropriateness Score is a **supporting** metric (§12) — it qualifies, and does
+**not** redefine, the primary endpoints. **367 decisions** (275 interventions + 92
+condition-stratified L0), blind to condition and globally shuffled, were rated independently by
+**2 human raters**; the 145 disagreements were reconciled by a human adjudicator into a complete
+consensus. Artifacts: [`ias_review/`](ias_review/) (`rater_{1,2}_completed.csv`,
+`inter_rater_agreement.md`, `reconciliation_worksheet.csv`, `reconciled.csv`, `ias_by_condition.csv`).
+
+**Inter-rater agreement (pre-registered target κ ≥ 0.70):** Cohen's **κ = 0.367** (raw agreement
+p_o = 0.605, n = 367) — **below target.** This is reported as-is: rater reliability on the
+appropriateness judgement was only *fair/moderate*, so all IAS conclusions below carry a
+**low-reliability caveat** and are read as directional support, not confirmation.
+
+**Per-condition IAS (from the reconciled consensus):**
+
+| Condition | n | appropriate | should_have_intervened (missed) | unnecessary (over-intervention) | appropriate frac |
+|---|---|---|---|---|---|
+| **cadis** | 80 | 55 | 9 | 16 | **0.688** |
+| full_autonomy | 35 | 23 | 12 | 0 | 0.657 |
+| random | 58 | 38 | 8 | 12 | 0.655 |
+| static_hitl | 194 | 73 | 4 | 117 | 0.376 |
+
+**Reading (supporting, caveated).** CADIS has the highest appropriateness fraction (0.688), mainly
+by avoiding Static-HITL's large mass of *unnecessary* interventions (117/194 — the direct cost of
+gating every action) while incurring fewer *missed* interventions than Full-Autonomy (9 vs 12; Full
+Autonomy never over-intervenes but has the most misses, as expected for zero oversight). CADIS's
+edge over budget-matched **Random** on appropriateness is **slim** (0.688 vs 0.655). Given κ < 0.70
+and IAS being secondary, this is **weak directional evidence** that CADIS places oversight sensibly
+— it does **not**, on its own, establish that CADIS makes the framework safer, and it does not
+change the inconclusive primary endpoint (H3).
 
 ---
 
@@ -175,7 +196,7 @@ per-condition IAS automatically. This does not affect the primary endpoint.
 | Ablation grid | `benchmark/results_deepseek-v4-flash/ablation/weight_threshold_grid.csv` | ✅ |
 | Calibration (ECE + reliability diagram) | `benchmark/results_deepseek-v4-flash/calibration/reliability.{json,svg}` | ✅ |
 | IAS blind export + κ/reconciliation tooling | `benchmark/results_deepseek-v4-flash/ias_review/**`; `benchmark/run/ias.py` | ✅ |
-| IAS ratings + κ + reconciliation notes | (pending human raters) | ⏳ |
+| IAS ratings + κ + reconciliation notes | `benchmark/results_deepseek-v4-flash/ias_review/` (rater sheets, κ, reconciled consensus, per-condition IAS) | ✅ |
 | `RUNLOG` of deviations | `progress_newplan.md` (deviation register D1/D2/D3 + session log) | ✅ |
 | Reproducibility metadata (commit, model slug, seeds, config_hash) | `benchmark/freeze/frozen_environment.yaml` | ✅ |
 | Results snapshot + this final report | `benchmark/results_deepseek-v4-flash/{RESULTS.md,FINAL_REPORT.md}` | ✅ |

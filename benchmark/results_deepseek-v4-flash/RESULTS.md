@@ -179,10 +179,14 @@ benchmark/results_deepseek-v4-flash/
     --meta benchmark/runs_deepseek-v4-flash
 ```
 
-## Pending
+## IAS (secondary metric — collected)
 
-- **IAS (Intervention Appropriateness Score, secondary).** Not in this snapshot. Blind-to-condition
-  export of intervention decisions + Cohen's κ + reconciliation is the next S15 step. Pre-registered
-  scope: **all 275 intervention decisions (level ≥ 1) plus a condition-stratified sample of L0
-  non-interventions**, blind and globally shuffled, so all three rating categories
-  (*appropriate / should-have-intervened / unnecessary*) are measurable. See `progress_newplan.md`.
+- **367 decisions** (275 interventions + 92 condition-stratified L0), blind + shuffled, rated by
+  **2 human raters**; 145 disagreements reconciled by a human adjudicator to full consensus.
+- **Cohen's κ = 0.367** (p_o 0.605) — **below the pre-registered 0.70 target**; reported as-is, so
+  IAS carries a **low-reliability caveat**.
+- **Per-condition appropriateness fraction:** cadis **0.688** · full_autonomy 0.657 · random 0.655
+  · static_hitl 0.376 (Static-HITL's 117/194 *unnecessary* interventions are the cost of gating
+  everything; Full-Autonomy has the most *missed* interventions, 12). CADIS's edge over Random is
+  slim (0.688 vs 0.655). Weak directional support only; does not change the inconclusive H3.
+  Full detail: [`FINAL_REPORT.md`](FINAL_REPORT.md) §8 and [`ias_review/`](ias_review/).
