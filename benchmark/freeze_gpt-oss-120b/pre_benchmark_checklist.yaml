@@ -1,0 +1,13 @@
+N == 5: true
+linear I(t) weights 0.35/0.30/0.35: true
+thresholds 0.25/0.50/0.75: true
+CRITICAL -> L3: true
+exactly the 4 conditions: true
+one pinned OpenRouter model: true
+targets identical & digest-pinned: true
+R >= 3, distinct seeds: true
+CADIS-first ordering for C3: true
+primary metrics + endpoint pre-registered: true
+cascade/outcome definitions pre-registered: true
+logging captures the full section-14 row: true
+freeze artifacts written: true
