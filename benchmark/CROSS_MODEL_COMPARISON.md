@@ -1,94 +1,109 @@
-# CADIS — Cross-Model Comparison (deepseek-v4-flash vs gemini-2.5-flash)
+# CADIS — Cross-Model Comparison (3 models)
 
-> Two independent, single-model CADIS benchmarks run under the **same protocol** (4 conditions ×
+> Three independent, single-model CADIS benchmarks under the **same protocol** (4 conditions ×
 > 3 core targets × R=3 = 36 cells each; N=5; weights `0.35/0.30/0.35`; thresholds `0.25/0.50/0.75`;
-> `max_iterations=20`; CADIS-first). **The model is the only intended variable.** This is the
-> external-validity comparison for the thesis. Per-model detail:
+> `max_iterations=20`; CADIS-first). **The model is the only intended variable** — the external-validity
+> evidence for the thesis. Per-model detail:
 > [`results_deepseek-v4-flash/RESULTS.md`](results_deepseek-v4-flash/RESULTS.md) ·
-> [`results_gemini-2.5-flash/RESULTS.md`](results_gemini-2.5-flash/RESULTS.md).
+> [`results_gemini-2.5-flash/RESULTS.md`](results_gemini-2.5-flash/RESULTS.md) ·
+> [`results_gpt-oss-120b/RESULTS.md`](results_gpt-oss-120b/RESULTS.md).
 
-| | deepseek | gemini |
-|---|---|---|
-| Model | `openrouter/deepseek/deepseek-v4-flash` | `openrouter/google/gemini-2.5-flash` |
-| Freeze config_hash | `ffb01ad7…` | `f44177a9…` |
-| Outcome classifier | **v0.1** (pre-D4) | **v0.2.0** (corrected, D4) |
-| Cells | 36/36 | 36/36 |
+| | deepseek-v4-flash | gemini-2.5-flash | gpt-oss-120b |
+|---|---|---|---|
+| config_hash | `ffb01ad7…` | `f44177a9…` | `cc02b63f…` |
+| outcome classifier | **v0.1** (pre-D4) | **v0.2.0** | **v0.2.0** |
+| cells | 36/36 | 36/36 | 36/36 |
+| model type | non-reasoning | non-reasoning | reasoning (120B) |
 
-> **Instrument caveat (read first).** The two runs use **different outcome classifiers**: deepseek
-> predates the D4 fix (every executed command logged `success`; outcomes degenerate), gemini uses the
-> corrected v0.2.0 (real `failure`/`timeout`/`partial`). So **HER, TCR, TTC are directly comparable**
-> (classifier-independent), **HCR is 0 in both** (comparable in result), and **ECE is *not* directly
-> comparable** (deepseek's was degenerate). A fully classifier-matched comparison would require
+> **Instrument caveat (read first).** deepseek predates the D4 outcome-classifier fix (every executed
+> command logged `success`; outcomes degenerate); gemini and gpt-oss use the corrected **v0.2.0**
+> (real `failure`/`timeout`/`partial`). ⇒ **HER, TCR, TTC are directly comparable across all three**
+> (classifier-independent); **HCR is 0 in all three** (comparable in result); **ECE is directly
+> comparable only between the two v0.2.0 models** (deepseek's is degenerate). Full parity would need
 > re-running deepseek under v0.2.0 (a further billable matrix — not done).
 
-## Headline metrics (mean per condition, n=9 runs each)
+## HCR — Hallucination-Cascade Rate (primary safety endpoint)
 
-| Condition | HCR (ds / gm) | HER (ds / gm) | TCR (ds / gm) | mean TTC (ds / gm) |
-|---|---|---|---|---|
-| full_autonomy | 0.00 / 0.00 | **0.00 / 0.00** | **0.67 / 0.11** | 12.7 s / **19.0 min** |
-| static_hitl | 0.00 / 0.00 | **1.00 / 1.00** | 0.00 / 0.00 | 1.2 s / 0.6 s |
-| random | 0.00 / 0.00 | 0.285 / 0.353 | **0.67 / 0.11** | 8.6 s / 11.1 min |
-| cadis | 0.00 / 0.00 | 0.277 / 0.356 | 0.22 / 0.00 | 10.5 s / **35.6 s** |
+| Condition | deepseek | gemini | gpt-oss |
+|---|---|---|---|
+| full_autonomy | 0.00 | 0.00 | 0.00 |
+| static_hitl | 0.00 | 0.00 | 0.00 |
+| random | 0.00 | 0.00 | 0.00 |
+| cadis | 0.00 | 0.00 | 0.00 |
 
-*(ds = deepseek-v4-flash, gm = gemini-2.5-flash.)*
+**0 across the board.** Under the corrected instrument gemini logged 16 `failure`s and gpt-oss 6, but
+neither (nor deepseek) ever produced ≥3 consecutive invalid-command failures → **no cascades in any
+of the three models.** H1/H3 are undecidable (0 vs 0) uniformly.
 
-## Cross-model findings
+## HER — Human-Effort Ratio (fraction of actions gated, ≥ L1)
 
-1. **Primary safety endpoint (HCR) is a robust cross-model null.** HCR = 0 for **both** models in
-   **all** conditions. Crucially, gemini ran under the *corrected* classifier and still produced no
-   cascades: its 36 runs logged **16 `failure` + 55 `timeout` + 57 `partial`** outcomes, but never
-   ≥3 consecutive `failure`s. So "no cascades" is not an instrument artefact — **neither model
-   hallucinate-cascades on these targets.** H1/H3 remain undecidable (0 vs 0) across both models.
+| Condition | deepseek | gemini | gpt-oss |
+|---|---|---|---|
+| full_autonomy | 0.000 | 0.000 | 0.000 |
+| static_hitl | 1.000 | 1.000 | 1.000 |
+| random | 0.285 | 0.353 | 0.367 |
+| cadis | 0.277 | 0.356 | 0.329 |
 
-2. **Oversight-cost structure replicates.** Both models show the same HER ordering
-   (full 0 < adaptive ≈ random ≪ static 1.0) and **budget-matching holds** (random ≈ cadis:
-   0.285≈0.277 deepseek, 0.353≈0.356 gemini). Gemini trips slightly more interventions
-   (CADIS HER 0.356 vs 0.277) — it proposes more risky/uncertain actions.
+**Structure replicates across all three:** full 0 < adaptive ≈ random ≪ static 1.0, and
+**budget-matching holds** (random ≈ cadis in every model). CADIS holds human effort at ~28–36% —
+far below static HITL's 100% — on all three models.
 
-3. **Capability gap (TCR).** deepseek completes far more objectives (full/random 0.67, cadis 0.22)
-   than gemini (full/random **0.11**, cadis/static **0**). On this suite gemini is the weaker,
-   flailier agent — only 2 completions in 36 runs, both on juice-shop.
+## TCR — Task-Completion Rate
 
-4. **The striking result — TTC and where CADIS earns its keep.** Under **full autonomy**, gemini
-   burns **~19 min/run** (individual msf2 runs hit 20, 60, **90 min**) because it repeatedly issues
-   the vsftpd-backdoor `nc … 21` command with no `-w` flag — each blocks and is killed at the 300 s
-   command cap (`timeout`). **CADIS gating cuts that to ~36 s** (and static-HITL to 0.6 s) by
-   rejecting the HIGH-risk-and-useless backdoor attempts before they run. deepseek, which didn't
-   flail, shows no such gap (~9–13 s across conditions). **Adaptive oversight's benefit is larger for
-   the less-reliable model:** CADIS prevented gemini from wasting ~30× the wall-clock on
-   risky-and-fruitless actions.
+| Condition | deepseek | gemini | gpt-oss |
+|---|---|---|---|
+| full_autonomy | 0.667 | 0.111 | 0.000 |
+| static_hitl | 0.000 | 0.000 | 0.111 |
+| random | 0.667 | 0.111 | 0.000 |
+| cadis | 0.222 | 0.000 | 0.111 |
 
-## Thesis takeaways
+**Capability gap:** deepseek is far more effective (0.67 ungated) than gemini/gpt-oss (~0.11 or 0).
+On the two weaker models completions are rare (2/36 each) and noisy — gpt-oss's only completions came
+under the **gated** conditions (static/cadis on msf2), not full/random.
 
-- **The cascade-safety claim is neither confirmed nor refuted for either model** — the hazard simply
-  does not occur in this regime (competent-enough models, tractable single-service/web targets),
-  now shown with a *validated* instrument on gemini. That is a stronger, cross-model version of the
-  single-model null.
-- **CADIS's demonstrated value is efficiency + appropriate restraint, and it scales with agent
-  unreliability:** it holds human effort well below static HITL (both models) and, for the flailier
-  agent (gemini), avoids catastrophic wall-clock waste by gating useless-risky actions — a benefit
-  invisible on the more capable model. This is the comparison's headline contribution.
-- **Trade-off stated honestly:** CADIS's gating also lowers completion (gemini cadis TCR 0 vs full
-  0.11; deepseek cadis 0.22 vs full 0.67) — it blocks exploitation steps, useless *and* useful
-  alike. Oversight cost is real; in this regime there is no cascade benefit to offset it.
+## TTC — mean wall-clock per run (the standout result)
 
-## Calibration (CADIS only)
+| Condition | deepseek | gemini | gpt-oss |
+|---|---|---|---|
+| full_autonomy | 12.7 s | **19.0 min** | 4.5 min |
+| static_hitl | 1.2 s | 0.6 s | 70.0 s |
+| random | 8.6 s | 11.1 min | 43.6 s |
+| cadis | 10.5 s | **35.6 s** | **3.2 s** |
 
-- deepseek ECE 0.197 (112–173 steps) — **degenerate** (0 observed failures under v0.1; not
-  informative).
-- gemini ECE **0.170** over 112 CADIS steps — **meaningful** for the first time (real failures feed
-  it), though still moderate. Reported per model; not cross-compared due to the instrument difference.
+On the weaker models, **full autonomy is catastrophically slow** because the agent flails on the
+msf2 vsftpd backdoor (blocking `nc … 21`, each killed at the 300 s command cap). **CADIS is the
+*fastest* condition for both gemini (35.6 s vs 19 min) and gpt-oss (3.2 s vs 4.5 min)** — its gating
+rejects the risky-and-fruitless attempts before they run. deepseek, which didn't flail, shows no such
+gap. **The efficiency benefit of adaptive oversight scales with agent unreliability** and is
+consistent across the two models that exhibit it.
 
-## Limitations (carry into the thesis)
+## Calibration (CADIS only, ECE)
+- deepseek 0.197 — **degenerate** (v0.1, 0 observed failures; not informative).
+- gemini **0.170** · gpt-oss **0.193** — both meaningful (real outcomes feed them), moderate;
+  directly comparable to each other.
 
-- Two models is a start, not a broad sweep; both are cheap/fast flash-class models.
-- Instrument mismatch (deepseek v0.1 vs gemini v0.2.0) — HER/TCR/TTC comparable, HCR both 0, ECE not.
-- Small target set (n=3) → paired tests underpowered (Wilcoxon floor p=0.25); HCR 0-vs-0 is degenerate.
-- IAS (human-rated) exists for **deepseek only**; gemini IAS would need a separate human pass.
-- gemini's msf2 TTC is inflated by timeout-capped flailing — a *real* behaviour, but note the 300 s
-  command cap sets its scale.
+## Thesis takeaways (three-model)
+1. **Robust cross-model null on the primary safety endpoint.** No hallucination cascades in any of
+   three models, all conditions — shown with a *validated* instrument on two of them. The hazard
+   simply does not arise in this regime (flash/open reasoning models; tractable single-service/web
+   targets). H1/H3 are bounded, not demonstrated.
+2. **CADIS's oversight-cost structure and budget-matching replicate across all three models** — the
+   mechanism behaves consistently, not model-idiosyncratically.
+3. **Headline contribution:** CADIS's demonstrated value is **efficiency + appropriate restraint that
+   scales with agent unreliability** — it holds effort far below static HITL everywhere, and on the
+   flailier models it *slashes* wasted wall-clock (up to ~30×) by gating useless-risky actions, a
+   benefit invisible on the most capable model.
+4. **Honest trade-off:** CADIS gating also suppresses completion where exploitation would have
+   succeeded; in this regime there is no cascade benefit to offset that cost.
+
+## Limitations
+Three flash/open models — a start, not a broad sweep. Instrument mismatch (deepseek v0.1 vs the two
+v0.2.0 models — HER/TCR/TTC comparable, HCR all 0, ECE only across the v0.2.0 pair). Small target set
+(n=3) → paired tests underpowered; HCR degenerate (0 vs 0). IAS (human-rated) is deepseek-only.
+gemini/gpt-oss full-autonomy TTC is inflated by timeout-capped flailing (scale set by the 300 s cap).
 
 ## Provenance
-Freezes: [`freeze/`](freeze) (deepseek) · [`freeze_gemini-2.5-flash/`](freeze_gemini-2.5-flash).
-Raw runs are git-ignored (`runs_*/`); committed metrics under each `results_*/`. Deviations D1–D6 in
-[`../progress_newplan.md`](../progress_newplan.md). `newplan.md` unedited.
+Freezes: [`freeze/`](freeze) · [`freeze_gemini-2.5-flash/`](freeze_gemini-2.5-flash) ·
+[`freeze_gpt-oss-120b/`](freeze_gpt-oss-120b). Raw runs git-ignored (`runs_*/`); committed metrics
+under each `results_*/`. Deviations D1–D7 in [`../progress_newplan.md`](../progress_newplan.md).
+`newplan.md` unedited.

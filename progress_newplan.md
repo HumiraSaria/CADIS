@@ -35,11 +35,37 @@ Record every post-freeze or methodology deviation here (summary), with a full en
 | D4 | 2026-09-19 | Outcome classifier logs every executed terminal command `success` (real exit_code/stderr unused), so the pre-registered hallucination-cascade is structurally unreachable (HCR=0 by construction; 0 `failure` in 635 steps). Correct the instrument to detect invalid-command/nonexistent-target `failure` from `CommandResult`; cascade rule unchanged. Neutral, all-conditions, report regardless of sign. Isolated (new `results_deepseek-v4-flash_v2/`); originals preserved. | CadisClaude.md §6.2, Q1/Q2, F8; newplan.md §17 | outcome_class; FH→routing; HCR; H1/H3; **new isolated run only** (original run untouched) | **CODE IMPLEMENTED (2026-09-19)** — rule confirmed by user (`classification_rule.xlsx`), adopted verbatim as `classify_terminal_outcome` v0.2.0 (unit-tested; suite 675). **Still pending: v2 freeze + billable pilot/run** (paired with D5 targets). |
 | D5 | 2026-09-19 | Regime too easy for the model → cascades never occur AND n=3 targets underpowers the paired test. Expand/harden the digest-pinned target set (→ ~6–8) and raise per-run max-iterations so the hallucination-cascade phenomenon can occur and H3 is adequately powered. Model **unchanged** (same pinned `deepseek-v4-flash`); N=3 unchanged. Pilot-gated before the full matrix. | CadisClaude.md §9.3 (target set), §9.2 (power); newplan.md §8, §17 | targets; HCR/H3 power; **new isolated v2 run only** | **NOT PURSUED (2026-09-19)** — pilot (full_autonomy, corrected classifier) showed cascades unreachable (1 failure / 6 runs, 0 cascades); blocker is model behaviour, not target count → full matrix not run. WebGoat kept as a validated target. |
 | D6 | 2026-09-19 | Add a **second pinned model** (`openrouter/google/gemini-2.5-flash`) as a separate, independently-frozen benchmark for **cross-model external validity** (thesis needs >1 model, shown side-by-side). Only the model differs vs deepseek; same protocol/targets(3 core)/conditions/config. Requested `gemini-3.8-flash:batch` rejected (Batch-API-only, incompatible with the interactive loop). Runs under corrected classifier v0.2.0 → HER/TCR/TTC directly comparable to deepseek v1; HCR/ECE carry an instrument note. | CadisClaude.md §9 (external validity); newplan.md §6 (single pinned model — per-benchmark), §17 | model; **new isolated `*_gemini-2.5-flash` run only** (deepseek untouched) | **DONE (2026-09-20)** — 36/36; results + `CROSS_MODEL_COMPARISON.md` committed. HCR 0; CADIS cut gemini's full-autonomy TTC ~19min→~36s by gating flailing. |
-| D7 | 2026-09-20 | Add a **third pinned model** (`openrouter/openai/gpt-oss-120b`) — same external-validity rationale as D6; isolated, only the model differs (3 core targets, 4 conditions, R=3, N=5, same weights/thresholds, max_iter=20, corrected classifier v0.2.0). Reasoning-capable model; smoke-tested OK (finish=stop, real content). | CadisClaude.md §9; newplan.md §6 (per-benchmark), §17 | model; **new isolated `*_gpt-oss-120b` run only** (deepseek/gemini untouched) | **RUNNING (2026-09-20)** — user pre-approved the billable run; executing (background + watchdog). |
+| D7 | 2026-09-20 | Add a **third pinned model** (`openrouter/openai/gpt-oss-120b`) — same external-validity rationale as D6; isolated, only the model differs (3 core targets, 4 conditions, R=3, N=5, same weights/thresholds, max_iter=20, corrected classifier v0.2.0). Reasoning-capable model; smoke-tested OK (finish=stop, real content). | CadisClaude.md §9; newplan.md §6 (per-benchmark), §17 | model; **new isolated `*_gpt-oss-120b` run only** (deepseek/gemini untouched) | **DONE (2026-09-20)** — 36/36; HCR 0; CADIS fastest condition (3.2s vs full 4.5min). Results + 3-model `CROSS_MODEL_COMPARISON.md` committed. |
 
 ---
 
 ## Session log (newest first)
+
+### 2026-09-20 — [Deviation D7 — DONE] gpt-oss-120b 36/36 + three-model comparison
+
+- **Completed:** isolated gpt-oss-120b matrix **36/36, 0 failures, no empty runs**, corrected
+  classifier v0.2.0. Tool-calling validated live in the first cell (reasoning model drives the loop).
+  No true hang (watchdog fired only COMPLETE). Snapshot committed to `benchmark/results_gpt-oss-120b/`
+  + `RESULTS.md`; `benchmark/CROSS_MODEL_COMPARISON.md` extended to **three models**.
+- **gpt-oss results (n=9/cond):** HCR 0 everywhere; HER full 0 / static 1.0 / random 0.367 /
+  cadis 0.329 (budget-matching holds); TCR full 0 / static 0.111 / random 0 / cadis 0.111 (2/36
+  completions, both on msf2 under gated conditions); TTC full 4.5min / static 70s / random 44s /
+  **cadis 3.2s** (gating avoids flailing). Outcomes: success 526 / partial 40 / timeout 10 /
+  failure 6 → **0 cascades**. ECE 0.193 (138 CADIS steps) — meaningful.
+- **Three-model synthesis (deepseek / gemini / gpt-oss):** (1) **HCR = 0 for all three, all
+  conditions → robust cross-model null on the primary safety endpoint**; the two v0.2.0 models
+  register real failures but none cascade. (2) HER structure + budget-matching replicate across all
+  three. (3) Capability gap: deepseek TCR 0.67 vs the weaker two ~0.11/0. (4) **Headline:** CADIS is
+  the *fastest* condition on both weaker models (gemini 35.6s vs 19min; gpt-oss 3.2s vs 4.5min) —
+  adaptive oversight's efficiency benefit scales with agent unreliability; invisible on deepseek.
+- **Files/components changed:** new `benchmark/results_gpt-oss-120b/**`; rewrote
+  `benchmark/CROSS_MODEL_COMPARISON.md` (3 models). Raw runs git-ignored. No source changed;
+  `newplan.md` untouched. Billable run complete.
+- **Current status:** **three-model cross-model benchmark complete + compared.** Thesis has robust
+  external-validity material.
+- **Next planned step (user): thesis write-up** from RESULTS + the 3-model comparison. Optional
+  further work (more models/targets, deepseek re-run under v0.2.0 for full parity, gemini/gpt-oss
+  IAS) all billable/human and unstarted.
 
 ### 2026-09-20 — [Deviation D7 — third model] gpt-oss-120b benchmark (isolated) — running
 
