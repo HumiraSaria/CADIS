@@ -1,0 +1,137 @@
+{
+  "weights": [
+    0.35,
+    0.3,
+    0.35
+  ],
+  "thresholds": [
+    0.25,
+    0.5,
+    0.75
+  ],
+  "models": {
+    "deepseek-v4-flash": {
+      "n_cadis_steps": 173,
+      "fidelity_recompute_match": "173/173",
+      "signal_means": {
+        "usc": 0.4002,
+        "fh": 0.0,
+        "rc": 0.164
+      },
+      "frac_FH_gt0": 0.0,
+      "rc_tier_mix": {
+        "LOW": 0.7514,
+        "MED": 0.0,
+        "HIGH": 0.2486,
+        "CRIT": 0.0
+      },
+      "full_HER_ge1": 0.2775,
+      "full_gate_ge2": 0.2486,
+      "attribution_gated(ge1)": {
+        "floor_driven": 0.8958333333333334,
+        "band_driven": 0.10416666666666667
+      },
+      "attribution_L2(eq2)": {
+        "floor_driven": 1.0,
+        "band_driven": 0.0
+      },
+      "ablation_no_RC": {
+        "HER_ge1": 0.4277,
+        "gate_ge2": 0.0,
+        "changed_vs_full": 0.5029
+      },
+      "ablation_no_USC": {
+        "HER_ge1": 0.2486,
+        "gate_ge2": 0.2486,
+        "changed_vs_full": 0.0289
+      },
+      "ablation_no_FH": {
+        "HER_ge1": 0.5145,
+        "gate_ge2": 0.2486,
+        "changed_vs_full": 0.237
+      }
+    },
+    "gemini-2.5-flash": {
+      "n_cadis_steps": 112,
+      "fidelity_recompute_match": "112/112",
+      "signal_means": {
+        "usc": 0.3807,
+        "fh": 0.0872,
+        "rc": 0.0913
+      },
+      "frac_FH_gt0": 0.3661,
+      "rc_tier_mix": {
+        "LOW": 0.8571,
+        "MED": 0.0089,
+        "HIGH": 0.1339,
+        "CRIT": 0.0
+      },
+      "full_HER_ge1": 0.3304,
+      "full_gate_ge2": 0.1429,
+      "attribution_gated(ge1)": {
+        "floor_driven": 0.43243243243243246,
+        "band_driven": 0.5675675675675675
+      },
+      "attribution_L2(eq2)": {
+        "floor_driven": 0.9375,
+        "band_driven": 0.0625
+      },
+      "ablation_no_RC": {
+        "HER_ge1": 0.4732,
+        "gate_ge2": 0.0625,
+        "changed_vs_full": 0.4018
+      },
+      "ablation_no_USC": {
+        "HER_ge1": 0.1607,
+        "gate_ge2": 0.1339,
+        "changed_vs_full": 0.1786
+      },
+      "ablation_no_FH": {
+        "HER_ge1": 0.5089,
+        "gate_ge2": 0.1339,
+        "changed_vs_full": 0.2054
+      }
+    },
+    "gpt-oss-120b": {
+      "n_cadis_steps": 138,
+      "fidelity_recompute_match": "138/138",
+      "signal_means": {
+        "usc": 0.4654,
+        "fh": 0.0183,
+        "rc": 0.0909
+      },
+      "frac_FH_gt0": 0.0797,
+      "rc_tier_mix": {
+        "LOW": 0.8551,
+        "MED": 0.0145,
+        "HIGH": 0.1304,
+        "CRIT": 0.0
+      },
+      "full_HER_ge1": 0.2536,
+      "full_gate_ge2": 0.1304,
+      "attribution_gated(ge1)": {
+        "floor_driven": 0.5714285714285714,
+        "band_driven": 0.42857142857142855
+      },
+      "attribution_L2(eq2)": {
+        "floor_driven": 1.0,
+        "band_driven": 0.0
+      },
+      "ablation_no_RC": {
+        "HER_ge1": 0.6014,
+        "gate_ge2": 0.0,
+        "changed_vs_full": 0.4928
+      },
+      "ablation_no_USC": {
+        "HER_ge1": 0.1449,
+        "gate_ge2": 0.1304,
+        "changed_vs_full": 0.1087
+      },
+      "ablation_no_FH": {
+        "HER_ge1": 0.5435,
+        "gate_ge2": 0.1304,
+        "changed_vs_full": 0.3043
+      }
+    }
+  }
+}

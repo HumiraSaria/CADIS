@@ -1,0 +1,73 @@
+{
+  "cascade_N": 3,
+  "failure_classes": [
+    "failure"
+  ],
+  "models": {
+    "deepseek-v4-flash": {
+      "classifier": "v0.1 (degenerate)",
+      "n_runs": 36,
+      "total_executed_steps": 495,
+      "total_failure_steps": 0,
+      "marginal_failure_rate_p": 0.0,
+      "observed_max_consec_failure_streak": 0,
+      "runs_by_max_streak": {
+        "0": 36
+      },
+      "observed_cascades_ge3": 0,
+      "expected_cascades_iid_at_p": 0.0,
+      "p_star_for_80pct_power": 0.164,
+      "failure_rate_by_condition": {
+        "cadis": 0.0,
+        "full_autonomy": 0.0,
+        "random": 0.0,
+        "static_hitl": 0.0
+      },
+      "mean_run_length": 13.75
+    },
+    "gemini-2.5-flash": {
+      "classifier": "v0.2.0",
+      "n_runs": 36,
+      "total_executed_steps": 476,
+      "total_failure_steps": 16,
+      "marginal_failure_rate_p": 0.03361,
+      "observed_max_consec_failure_streak": 1,
+      "runs_by_max_streak": {
+        "0": 22,
+        "1": 14
+      },
+      "observed_cascades_ge3": 0,
+      "expected_cascades_iid_at_p": 0.0149,
+      "p_star_for_80pct_power": 0.1668,
+      "failure_rate_by_condition": {
+        "cadis": 0.0412,
+        "full_autonomy": 0.0309,
+        "random": 0.0294,
+        "static_hitl": 0.037
+      },
+      "mean_run_length": 13.22
+    },
+    "gpt-oss-120b": {
+      "classifier": "v0.2.0",
+      "n_runs": 36,
+      "total_executed_steps": 582,
+      "total_failure_steps": 6,
+      "marginal_failure_rate_p": 0.01031,
+      "observed_max_consec_failure_streak": 1,
+      "runs_by_max_streak": {
+        "0": 30,
+        "1": 6
+      },
+      "observed_cascades_ge3": 0,
+      "expected_cascades_iid_at_p": 0.0006,
+      "p_star_for_80pct_power": 0.1538,
+      "failure_rate_by_condition": {
+        "cadis": 0.0083,
+        "full_autonomy": 0.0167,
+        "random": 0.013,
+        "static_hitl": 0.0
+      },
+      "mean_run_length": 16.17
+    }
+  }
+}

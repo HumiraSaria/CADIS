@@ -1,0 +1,28 @@
+{
+  "deepseek-v4-flash": {
+    "classifier": "v0.1 (degenerate)",
+    "verdict_totals": {
+      "OTHER": 12,
+      "VIABLE": 15,
+      "DOOMED": 16
+    },
+    "total_blocked": 43
+  },
+  "gemini-2.5-flash": {
+    "classifier": "v0.2.0",
+    "verdict_totals": {
+      "OTHER": 2,
+      "VIABLE": 2,
+      "DOOMED": 11
+    },
+    "total_blocked": 15
+  },
+  "gpt-oss-120b": {
+    "classifier": "v0.2.0",
+    "verdict_totals": {
+      "OTHER": 11,
+      "DOOMED": 7
+    },
+    "total_blocked": 18
+  }
+}

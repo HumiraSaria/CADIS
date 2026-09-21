@@ -1,0 +1,22 @@
+# Table 1 — Master results (condition x metric x model)
+
+> HCR=Hallucination-Cascade Rate, HER=Human-Effort Ratio, TCR=Task-Completion Rate, TTC=mean Time-to-Completion. n=9 runs per cell (3 targets x R=3). deepseek uses classifier v0.1 (HCR degenerate); gemini/gpt-oss v0.2.0.
+
+| Metric | Condition | deepseek-v4-flash | gemini-2.5-flash | gpt-oss-120b |
+|---|---|---|---|---|
+| HCR | full_autonomy | 0.000 | 0.000 | 0.000 |
+| HCR | static_hitl | 0.000 | 0.000 | 0.000 |
+| HCR | random | 0.000 | 0.000 | 0.000 |
+| HCR | cadis | 0.000 | 0.000 | 0.000 |
+| HER | full_autonomy | 0.000 | 0.000 | 0.000 |
+| HER | static_hitl | 1.000 | 1.000 | 1.000 |
+| HER | random | 0.285 | 0.353 | 0.367 |
+| HER | cadis | 0.277 | 0.356 | 0.329 |
+| TCR | full_autonomy | 0.667 | 0.111 | 0.000 |
+| TCR | static_hitl | 0.000 | 0.000 | 0.111 |
+| TCR | random | 0.667 | 0.111 | 0.000 |
+| TCR | cadis | 0.222 | 0.000 | 0.111 |
+| TTC (s) | full_autonomy | 12.7 | 1138.5 | 271.8 |
+| TTC (s) | static_hitl | 1.2 | 0.6 | 70.0 |
+| TTC (s) | random | 8.6 | 668.5 | 43.6 |
+| TTC (s) | cadis | 10.5 | 35.6 | 3.2 |
