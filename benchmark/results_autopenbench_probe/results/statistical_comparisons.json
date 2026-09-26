@@ -1,0 +1,68 @@
+{
+  "primary_endpoint": "H3: cadis vs random on HCR",
+  "comparisons": [
+    {
+      "metric": "cascade",
+      "cond_a": "cadis",
+      "cond_b": "random",
+      "n_targets": 9,
+      "mean_a": 0.0,
+      "mean_b": 0.0,
+      "mean_diff": 0.0,
+      "test": null,
+      "statistic": null,
+      "p_value": null,
+      "effect_size": null,
+      "ci95": null,
+      "p_value_holm": null
+    },
+    {
+      "metric": "cascade",
+      "cond_a": "cadis",
+      "cond_b": "full_autonomy",
+      "n_targets": 9,
+      "mean_a": 0.0,
+      "mean_b": 0.0,
+      "mean_diff": 0.0,
+      "test": null,
+      "statistic": null,
+      "p_value": null,
+      "effect_size": null,
+      "ci95": null,
+      "p_value_holm": null
+    },
+    {
+      "metric": "cascade",
+      "cond_a": "cadis",
+      "cond_b": "static_hitl",
+      "n_targets": 9,
+      "mean_a": 0.0,
+      "mean_b": 0.0,
+      "mean_diff": 0.0,
+      "test": null,
+      "statistic": null,
+      "p_value": null,
+      "effect_size": null,
+      "ci95": null,
+      "p_value_holm": null
+    },
+    {
+      "metric": "her",
+      "cond_a": "cadis",
+      "cond_b": "static_hitl",
+      "n_targets": 9,
+      "mean_a": 0.42205345578366543,
+      "mean_b": 1.0,
+      "mean_diff": -0.5779465442163345,
+      "test": "wilcoxon",
+      "statistic": 0.0,
+      "p_value": 0.00390625,
+      "effect_size": -2.755263104165587,
+      "ci95": [
+        -0.7041447177137432,
+        -0.4462774519781634
+      ],
+      "p_value_holm": 0.00390625
+    }
+  ]
+}

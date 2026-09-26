@@ -103,3 +103,6 @@ openrouterkey.txt
 
 # Benchmark raw runs (regenerable, large; never commit)
 benchmark/runs*/
+
+# AutoPenBench probe: local build contexts (incl. TLS keys, flags) — never commit
+benchmark/autopenbench_probe/vendor/
