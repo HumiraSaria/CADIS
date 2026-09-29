@@ -1,0 +1,17 @@
+{
+  "condition": "full_autonomy",
+  "target": "apb-heartbleed",
+  "rep": 2,
+  "seed": 1002,
+  "weights": [
+    0.35,
+    0.3,
+    0.35
+  ],
+  "thresholds": [
+    0.25,
+    0.5,
+    0.75
+  ],
+  "created": "2026-09-25T16:25:10.434349+00:00"
+}

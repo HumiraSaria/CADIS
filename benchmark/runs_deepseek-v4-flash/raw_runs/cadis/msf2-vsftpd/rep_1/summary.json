@@ -1,0 +1,23 @@
+{
+  "condition": "cadis",
+  "target": "msf2-vsftpd",
+  "rep": 1,
+  "seed": 1001,
+  "steps": 12,
+  "her": 0.25,
+  "levels": [
+    2,
+    2,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "completed": true
+}

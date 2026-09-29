@@ -1,0 +1,33 @@
+{
+  "condition": "static_hitl",
+  "target": "juice-shop",
+  "rep": 2,
+  "seed": 1002,
+  "steps": 22,
+  "her": 0.5,
+  "levels": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    2,
+    1,
+    0,
+    0,
+    2,
+    2,
+    0,
+    0,
+    0,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2
+  ],
+  "completed": false
+}

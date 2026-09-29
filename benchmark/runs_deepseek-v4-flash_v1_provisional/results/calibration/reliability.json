@@ -1,0 +1,76 @@
+{
+  "ece": 0.2640220641786957,
+  "n_steps": 197,
+  "bins": [
+    {
+      "lo": 0.0,
+      "hi": 0.1,
+      "count": 26,
+      "mean_score": 0.04455975624424884,
+      "observed_failure_rate": 0.0
+    },
+    {
+      "lo": 0.1,
+      "hi": 0.2,
+      "count": 53,
+      "mean_score": 0.15864663161170736,
+      "observed_failure_rate": 0.0
+    },
+    {
+      "lo": 0.2,
+      "hi": 0.3,
+      "count": 46,
+      "mean_score": 0.2416094462026543,
+      "observed_failure_rate": 0.0
+    },
+    {
+      "lo": 0.3,
+      "hi": 0.4,
+      "count": 20,
+      "mean_score": 0.35575895949570724,
+      "observed_failure_rate": 0.0
+    },
+    {
+      "lo": 0.4,
+      "hi": 0.5,
+      "count": 43,
+      "mean_score": 0.45505831211444664,
+      "observed_failure_rate": 0.0
+    },
+    {
+      "lo": 0.5,
+      "hi": 0.6,
+      "count": 9,
+      "mean_score": 0.5165333743638502,
+      "observed_failure_rate": 0.0
+    },
+    {
+      "lo": 0.6,
+      "hi": 0.7,
+      "count": 0,
+      "mean_score": 0.0,
+      "observed_failure_rate": 0.0
+    },
+    {
+      "lo": 0.7,
+      "hi": 0.8,
+      "count": 0,
+      "mean_score": 0.0,
+      "observed_failure_rate": 0.0
+    },
+    {
+      "lo": 0.8,
+      "hi": 0.9,
+      "count": 0,
+      "mean_score": 0.0,
+      "observed_failure_rate": 0.0
+    },
+    {
+      "lo": 0.9,
+      "hi": 1.0,
+      "count": 0,
+      "mean_score": 0.0,
+      "observed_failure_rate": 0.0
+    }
+  ]
+}

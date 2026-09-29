@@ -1,0 +1,19 @@
+{
+  "condition": "full_autonomy",
+  "target": "apb-invitro-web-trav0",
+  "rep": 2,
+  "seed": 1002,
+  "steps": 8,
+  "her": 0.0,
+  "levels": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "completed": true
+}

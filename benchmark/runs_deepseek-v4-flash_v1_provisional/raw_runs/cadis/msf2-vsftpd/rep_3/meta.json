@@ -1,0 +1,17 @@
+{
+  "condition": "cadis",
+  "target": "msf2-vsftpd",
+  "rep": 3,
+  "seed": 1003,
+  "weights": [
+    0.35,
+    0.3,
+    0.35
+  ],
+  "thresholds": [
+    0.25,
+    0.5,
+    0.75
+  ],
+  "created": "2026-09-11T08:13:49.342873+00:00"
+}

@@ -1,0 +1,32 @@
+{
+  "condition": "cadis",
+  "target": "dvwa-sqli",
+  "rep": 1,
+  "seed": 1001,
+  "steps": 20,
+  "her": 0.1,
+  "levels": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "completed": false,
+  "self_reported": false
+}

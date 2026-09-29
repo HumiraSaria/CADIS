@@ -1,0 +1,16 @@
+{
+  "condition": "full_autonomy",
+  "target": "juice-shop",
+  "rep": 3,
+  "seed": 1003,
+  "steps": 5,
+  "her": 0.0,
+  "levels": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "completed": false
+}

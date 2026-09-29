@@ -1,0 +1,31 @@
+{
+  "condition": "cadis",
+  "target": "msf2-vsftpd",
+  "rep": 1,
+  "seed": 1001,
+  "steps": 18,
+  "her": 0.5,
+  "levels": [
+    1,
+    2,
+    1,
+    2,
+    2,
+    1,
+    1,
+    0,
+    0,
+    1,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "completed": true,
+  "self_reported": true,
+  "success_evidence": "Connected! Sending commands...\nResponse: uid=0(root) gid=0(root)\n\nResponse: root\n\nResponse: ea989af40519\n\nResponse: Linux ea989af40519 6.18.33.2-microsoft-standard-WSL2 #1 SMP PREEMPT_DYNAMIC Thu Jun "
+}

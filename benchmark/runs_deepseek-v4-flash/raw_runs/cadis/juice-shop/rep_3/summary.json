@@ -1,0 +1,31 @@
+{
+  "condition": "cadis",
+  "target": "juice-shop",
+  "rep": 3,
+  "seed": 1003,
+  "steps": 20,
+  "her": 0.25,
+  "levels": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    2,
+    2,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    2,
+    1
+  ],
+  "completed": false
+}

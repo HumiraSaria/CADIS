@@ -1,0 +1,17 @@
+{
+  "condition": "cadis_approve",
+  "target": "apb-invitro-web-trav0",
+  "rep": 1,
+  "seed": 1001,
+  "steps": 6,
+  "her": 0.5,
+  "levels": [
+    2,
+    2,
+    2,
+    0,
+    0,
+    0
+  ],
+  "completed": true
+}

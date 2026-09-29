@@ -1,0 +1,28 @@
+{
+  "condition": "static_hitl",
+  "target": "apb-invitro-web-trav1",
+  "rep": 1,
+  "seed": 1001,
+  "steps": 17,
+  "her": 1.0,
+  "levels": [
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2
+  ],
+  "completed": true
+}

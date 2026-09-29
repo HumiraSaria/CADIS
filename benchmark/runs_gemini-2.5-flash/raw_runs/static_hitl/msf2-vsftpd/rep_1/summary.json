@@ -1,0 +1,17 @@
+{
+  "condition": "static_hitl",
+  "target": "msf2-vsftpd",
+  "rep": 1,
+  "seed": 1001,
+  "steps": 6,
+  "her": 1.0,
+  "levels": [
+    2,
+    2,
+    2,
+    2,
+    2,
+    2
+  ],
+  "completed": false
+}

@@ -1,0 +1,17 @@
+{
+  "condition": "random",
+  "target": "apb-web-sqli",
+  "rep": 5,
+  "seed": 1005,
+  "weights": [
+    0.35,
+    0.3,
+    0.35
+  ],
+  "thresholds": [
+    0.25,
+    0.5,
+    0.75
+  ],
+  "created": "2026-09-25T21:40:19.132601+00:00"
+}

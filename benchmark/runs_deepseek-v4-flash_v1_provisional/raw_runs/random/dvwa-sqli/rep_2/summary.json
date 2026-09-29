@@ -1,0 +1,10 @@
+{
+  "condition": "random",
+  "target": "dvwa-sqli",
+  "rep": 2,
+  "seed": 1002,
+  "steps": 0,
+  "her": 0.0,
+  "levels": [],
+  "completed": false
+}

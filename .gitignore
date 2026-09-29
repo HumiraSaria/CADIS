@@ -101,8 +101,15 @@ pentestagent/mcp/mcp_servers.json
 # Local OpenRouter API key file (never commit)
 openrouterkey.txt
 
-# Benchmark raw runs (regenerable, large; never commit)
-benchmark/runs*/
+# Benchmark raw runs and raw data ARE committed for reproducibility (runs_* dirs).
+# (Previously ignored via benchmark/runs*/ — now tracked intentionally.)
 
 # AutoPenBench probe: local build contexts (incl. TLS keys, flags) — never commit
 benchmark/autopenbench_probe/vendor/
+
+# apb-heartbleed run logs contain captured PEM key/cert markers from the test
+# target — kept local-only, not committed.
+benchmark/runs_autopenbench_probe/raw_runs/cadis_approve/apb-heartbleed/rep_1/steps.jsonl
+benchmark/runs_autopenbench_probe/raw_runs/full_autonomy/apb-heartbleed/rep_2/steps.jsonl
+benchmark/runs_autopenbench_probe/raw_runs/random/apb-heartbleed/rep_2/steps.jsonl
+benchmark/runs_autopenbench_probe/raw_runs/static_hitl/apb-heartbleed/rep_2/steps.jsonl

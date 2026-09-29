@@ -1,0 +1,23 @@
+{
+  "condition": "random",
+  "target": "msf2-vsftpd",
+  "rep": 2,
+  "seed": 1002,
+  "steps": 12,
+  "her": 0.3333333333333333,
+  "levels": [
+    2,
+    2,
+    2,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "completed": true
+}

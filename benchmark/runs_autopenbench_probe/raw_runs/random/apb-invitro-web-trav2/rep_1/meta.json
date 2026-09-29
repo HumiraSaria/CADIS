@@ -1,0 +1,17 @@
+{
+  "condition": "random",
+  "target": "apb-invitro-web-trav2",
+  "rep": 1,
+  "seed": 1001,
+  "weights": [
+    0.35,
+    0.3,
+    0.35
+  ],
+  "thresholds": [
+    0.25,
+    0.5,
+    0.75
+  ],
+  "created": "2026-09-25T22:22:33.807025+00:00"
+}

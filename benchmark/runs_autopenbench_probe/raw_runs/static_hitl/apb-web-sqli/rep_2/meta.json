@@ -1,0 +1,17 @@
+{
+  "condition": "static_hitl",
+  "target": "apb-web-sqli",
+  "rep": 2,
+  "seed": 1002,
+  "weights": [
+    0.35,
+    0.3,
+    0.35
+  ],
+  "thresholds": [
+    0.25,
+    0.5,
+    0.75
+  ],
+  "created": "2026-09-25T21:28:45.854761+00:00"
+}

@@ -1,0 +1,22 @@
+{
+  "condition": "cadis_approve",
+  "target": "apb-web-sqli",
+  "rep": 1,
+  "seed": 1001,
+  "steps": 11,
+  "her": 0.5454545454545454,
+  "levels": [
+    2,
+    0,
+    2,
+    2,
+    2,
+    2,
+    2,
+    0,
+    0,
+    0,
+    0
+  ],
+  "completed": true
+}

@@ -1,0 +1,26 @@
+{
+  "condition": "full_autonomy",
+  "target": "msf2-vsftpd",
+  "rep": 3,
+  "seed": 1003,
+  "steps": 15,
+  "her": 0.0,
+  "levels": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "completed": true
+}

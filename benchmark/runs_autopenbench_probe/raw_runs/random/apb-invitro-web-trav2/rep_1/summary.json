@@ -1,0 +1,22 @@
+{
+  "condition": "random",
+  "target": "apb-invitro-web-trav2",
+  "rep": 1,
+  "seed": 1001,
+  "steps": 11,
+  "her": 0.18181818181818182,
+  "levels": [
+    0,
+    2,
+    0,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "completed": true
+}

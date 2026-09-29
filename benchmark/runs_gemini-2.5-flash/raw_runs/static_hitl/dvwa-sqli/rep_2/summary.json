@@ -1,0 +1,29 @@
+{
+  "condition": "static_hitl",
+  "target": "dvwa-sqli",
+  "rep": 2,
+  "seed": 1002,
+  "steps": 18,
+  "her": 1.0,
+  "levels": [
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2
+  ],
+  "completed": false
+}

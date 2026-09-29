@@ -1,0 +1,17 @@
+{
+  "condition": "full_autonomy",
+  "target": "msf2-vsftpd",
+  "rep": 1,
+  "seed": 1001,
+  "weights": [
+    0.35,
+    0.3,
+    0.35
+  ],
+  "thresholds": [
+    0.25,
+    0.5,
+    0.75
+  ],
+  "created": "2026-09-20T02:02:40.473549+00:00"
+}

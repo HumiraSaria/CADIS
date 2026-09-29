@@ -1,0 +1,17 @@
+{
+  "condition": "static_hitl",
+  "target": "dvwa-sqli",
+  "rep": 3,
+  "seed": 1003,
+  "weights": [
+    0.35,
+    0.3,
+    0.35
+  ],
+  "thresholds": [
+    0.25,
+    0.5,
+    0.75
+  ],
+  "created": "2026-09-11T07:33:23.209285+00:00"
+}

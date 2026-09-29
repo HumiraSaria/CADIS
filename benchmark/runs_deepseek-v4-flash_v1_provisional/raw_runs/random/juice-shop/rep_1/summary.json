@@ -1,0 +1,25 @@
+{
+  "condition": "random",
+  "target": "juice-shop",
+  "rep": 1,
+  "seed": 1001,
+  "steps": 14,
+  "her": 0.2857142857142857,
+  "levels": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    2,
+    2,
+    0,
+    0,
+    2,
+    0,
+    2,
+    0,
+    0
+  ],
+  "completed": true
+}

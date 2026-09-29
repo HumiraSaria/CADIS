@@ -1,0 +1,17 @@
+{
+  "condition": "random",
+  "target": "juice-shop",
+  "rep": 3,
+  "seed": 1003,
+  "weights": [
+    0.35,
+    0.3,
+    0.35
+  ],
+  "thresholds": [
+    0.25,
+    0.5,
+    0.75
+  ],
+  "created": "2026-09-20T06:21:44.373027+00:00"
+}

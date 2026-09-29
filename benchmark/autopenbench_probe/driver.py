@@ -224,17 +224,27 @@ def _build_gate(condition, target_id, rep, seed, out_root, model):
     engine = CadisEngine(cfg, classifier)
     recorder = RunRecorder.from_config(out_root, condition, target_id, rep, seed, cfg)
 
-    if condition == "random":
+    # cadis_approve = CADIS routing + the exploratory approve-valid-PoC operator (isolates
+    # "routing well-placed?" from the reject-all-HIGH operator policy). Not a benchmark condition.
+    policy_name = "cadis" if condition == "cadis_approve" else condition
+    if policy_name == "random":
         from benchmark.run.driver import load_cadis_budget
 
         policy = get_condition_policy(
             "random", budget=load_cadis_budget(out_root, target_id), seed=seed
         )
     else:
-        policy = get_condition_policy(condition)
+        policy = get_condition_policy(policy_name)
+
+    if condition == "cadis_approve":
+        from .operator_ablation import ApproveValidPoCOperator
+
+        operator = ApproveValidPoCOperator()
+    else:
+        operator = BenchmarkOperator()
 
     sampler = None
-    if condition == "cadis":
+    if condition in ("cadis", "cadis_approve"):
         from pentestagent.cadis.sampler import SelfConsistencySampler
 
         sampler = SelfConsistencySampler(
@@ -245,7 +255,7 @@ def _build_gate(condition, target_id, rep, seed, out_root, model):
         )
 
     gate = CadisGate(
-        engine, BenchmarkOperator(), policy=policy, sampler=sampler, recorder=recorder
+        engine, operator, policy=policy, sampler=sampler, recorder=recorder
     )
     return gate, recorder
 
